@@ -89,11 +89,11 @@ function App() {
           }
         } catch (e) { console.warn("TMDB UPC Find failed", e); }
 
-        // 2. If TMDB failed, try UPCItemDB (Translation Layer)
         if (!data.results || data.results.length === 0) {
           try {
             setStatusMsg("Checking Global Barcode Database...");
-            const upcRes = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`);
+            // Use CORS proxy because UPCItemDB doesn't allow cross-origin requests from GitHub Pages
+            const upcRes = await fetch(`https://corsproxy.io/?` + encodeURIComponent(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`));
             const upcData = await upcRes.json();
 
             if (upcData.items && upcData.items.length > 0) {
