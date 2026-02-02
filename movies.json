@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-02T01:50:42.030Z",
+  "updated_at": "2026-02-02T01:51:06.141Z",
   "movies": [
     {
       "id": 9538,
@@ -29,6 +29,16 @@
       "upc": "191329041239",
       "added_at": "2026-02-02T01:50:41.847Z",
       "note": "Mamma Mia! Here We Go Again (4K Ultra HD (Sing-Along Edition)) [UHD]",
+      "status": "pending_enrichment"
+    },
+    {
+      "id": 324857,
+      "title": "Spider-Man: Into the Spider-Verse",
+      "poster_path": "/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg",
+      "release_date": "2018-12-06",
+      "upc": "043396538887",
+      "added_at": "2026-02-02T01:51:06.127Z",
+      "note": "Spider-Man: Into the Spider-Verse (4K Ultra HD + Blu-Ray + )",
       "status": "pending_enrichment"
     }
   ]
