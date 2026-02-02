@@ -1,0 +1,35 @@
+name: Enrich Library
+
+on:
+  push:
+    paths:
+      - 'movies.json'
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/requirements.txt
+          
+      - name: Run enrichment script
+        run: python scripts/enrich_library.py
+        
+      - name: Commit changes
+        run: |
+          git config --global user.name 'BlurayBot'
+          git config --global user.email 'bot@noreply.github.com'
+          git add movies.json
+          # Only commit if there are changes
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-enrich movie details" && git push)
