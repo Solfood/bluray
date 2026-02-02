@@ -6,46 +6,49 @@ function Scanner({ onScan, onClose }) {
     const regionId = "html5qr-code-full-region";
 
     useEffect(() => {
-        // Prevent double initialization in Strict Mode
+        // Prevent double initialization
         if (scannerRef.current) return;
 
         const config = {
-            fps: 10,
-            qrbox: { width: 250, height: 150 }, // Wider for barcodes
-            aspectRatio: 1.0,
+            fps: 15, // Higher FPS
+            qrbox: { width: 300, height: 150 }, // Wider box
+            // Remove fixed aspect ratio to use full camera field
+            videoConstraints: {
+                facingMode: "environment",
+                width: { ideal: 1280 }, // Prefer HD
+                height: { ideal: 720 }
+            },
             formatsToSupport: [
                 Html5QrcodeSupportedFormats.UPC_A,
                 Html5QrcodeSupportedFormats.UPC_E,
                 Html5QrcodeSupportedFormats.EAN_13,
                 Html5QrcodeSupportedFormats.EAN_8
             ],
-            // Use experimental features for better mobile support
             experimentalFeatures: {
                 useBarCodeDetectorIfSupported: true
             }
         };
 
-        // Verbose false to reduce console spam
         const scanner = new Html5QrcodeScanner(regionId, config, false);
         scannerRef.current = scanner;
 
         scanner.render(
             (decodedText) => {
-                // Success
                 console.log("Scan success:", decodedText);
-                scanner.clear();
+                // Don't clear manually here. 
+                // Just trigger callback -> React unmounts -> cleanup() runs.
                 onScan(decodedText);
             },
             (error) => {
-                // Error (scanning in progress, no code found yet)
-                // console.warn(error); 
+                // Ignore errors
             }
         );
 
         // Cleanup
         return () => {
             if (scannerRef.current) {
-                scannerRef.current.clear().catch(err => console.error("Failed to clear scanner", err));
+                // Use clear() which stops camera and removes UI
+                scannerRef.current.clear().catch(err => console.warn("Scanner cleanup warning:", err));
                 scannerRef.current = null;
             }
         };
@@ -56,8 +59,7 @@ function Scanner({ onScan, onClose }) {
             <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md relative">
                 <button
                     onClick={() => {
-                        // Force cleanup if user closes manually
-                        if (scannerRef.current) scannerRef.current.clear();
+                        // User manual close
                         onClose();
                     }}
                     className="absolute top-4 right-4 text-gray-400 hover:text-white"
