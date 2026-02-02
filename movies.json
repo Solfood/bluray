@@ -1,4 +1,15 @@
 {
-    "updated_at": "2024-01-01T00:00:00Z",
-    "movies": []
+  "updated_at": "2026-02-02T01:22:23.206Z",
+  "movies": [
+    {
+      "id": 9538,
+      "title": "Scanners",
+      "poster_path": "/VTqLdveNXxGsIAZL5I4RliTTt7.jpg",
+      "release_date": "1981-01-14",
+      "upc": "715515116916",
+      "added_at": "2026-02-02T01:22:23.192Z",
+      "note": "Scanners [Criterion Collection] [2 Discs] [Blu-ray/DVD] [1981]",
+      "status": "pending_enrichment"
+    }
+  ]
 }
