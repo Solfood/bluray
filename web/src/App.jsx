@@ -92,7 +92,8 @@ function App() {
         if (!data.results || data.results.length === 0) {
           try {
             setStatusMsg("Checking Global Barcode Database...");
-            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`);
+            // Switch to allorigins.win (more reliable than corsproxy.io)
+            const proxyUrl = `https://api.allorigins.win/raw?url=` + encodeURIComponent(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`);
             const upcRes = await fetch(proxyUrl);
 
             if (!upcRes.ok) throw new Error(`UPC API Status: ${upcRes.status}`);
