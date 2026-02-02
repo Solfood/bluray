@@ -14,6 +14,7 @@ function App() {
   const [movieData, setMovieData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [movies, setMovies] = useState([]);
+  const [statusMsg, setStatusMsg] = useState("");
 
   // Load movies on mount
   // Load movies on mount (even if no keys, we might want to fetch public JSON in future? 
@@ -66,6 +67,7 @@ function App() {
 
   const searchTMDB = async (query) => {
     setLoading(true);
+    setStatusMsg("Searching...");
     let detectedEdition = ""; // Capture edition info from UPC
 
     try {
@@ -75,8 +77,11 @@ function App() {
       const isBarcode = /^\d{10,14}$/.test(query);
 
       if (isBarcode) {
+        setStatusMsg(`Analyzing Barcode: ${query}...`);
+
         // 1. Try TMDB /find first (fastest, cleanest if it works)
         try {
+          setStatusMsg("Checking TMDB Database...");
           let res = await fetch(`${TMDB_BASE_URL}/find/${query}?api_key=${keys.tmdb}&external_source=upc`);
           let findData = await res.json();
           if (findData.movie_results?.length > 0) {
@@ -87,6 +92,7 @@ function App() {
         // 2. If TMDB failed, try UPCItemDB (Translation Layer)
         if (!data.results || data.results.length === 0) {
           try {
+            setStatusMsg("Checking Global Barcode Database...");
             const upcRes = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`);
             const upcData = await upcRes.json();
 
@@ -98,36 +104,45 @@ function App() {
               const cleanTitle = rawTitle.split(/[\[\(]/)[0].trim();
 
               // Now search TMDB with the name
+              setStatusMsg(`Found: "${cleanTitle}". Searching info...`);
               const searchRes = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(cleanTitle)}`);
               const searchData = await searchRes.json();
               if (searchData.results?.length > 0) {
                 data.results = searchData.results;
               }
+            } else {
+              setStatusMsg("Barcode not found in global DB.");
             }
           } catch (err) {
             console.warn("UPCItemDB failed", err);
+            setStatusMsg("Barcode lookup failed.");
           }
         }
       }
 
       if (!isBarcode && (!data.results || data.results.length === 0)) {
+        setStatusMsg(`Searching title: "${query}"...`);
         const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(query)}`);
         data = await res.json();
       }
 
       if (data.results && data.results.length > 0) {
+        setStatusMsg("Movie Found!");
         // Attach the detected edition info to the movie object
         setMovieData({ ...data.results[0], detected_edition: detectedEdition });
       } else {
         if (isBarcode) {
-          alert("Barcode not found in TMDB. Please type the Movie Title manually.");
+          setStatusMsg("Barcode unknown. Please type title.");
+          alert("Barcode recognized, but no movie info found. Please type the Title.");
           setScannedCode(query);
         } else {
+          setStatusMsg("No movie found.");
           alert("No results found. Please try another title.");
         }
       }
     } catch (e) {
       console.error(e);
+      setStatusMsg("Error: " + e.message);
       alert("Search failed: " + e.message);
     } finally {
       setLoading(false);
@@ -262,7 +277,13 @@ function App() {
               </div>
             </div>
           ))}
-          {movies.length === 0 && (
+          {loading && (
+            <div className="text-center my-4 col-span-full">
+              <div className="animate-spin text-4xl mb-2">💿</div>
+              <p className="text-blue-400 font-mono text-sm">{statusMsg}</p>
+            </div>
+          )}
+          {movies.length === 0 && !loading && (
             <p className="text-center col-span-full text-gray-500">No movies yet. Start scanning!</p>
           )}
         </div>
