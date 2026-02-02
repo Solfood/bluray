@@ -67,9 +67,33 @@ function Scanner({ onScan, onClose }) {
 
                 <h2 className="text-xl font-bold mb-4 text-center">Scan Barcode</h2>
                 <div id={regionId} className="overflow-hidden rounded-lg bg-black min-h-[300px]" />
-                <p className="text-center text-sm text-gray-500 mt-4">
-                    Point camera at the UPC barcode on the back of the case.
-                </p>
+
+                <div className="mt-4 text-center">
+                    <p className="text-sm text-gray-500 mb-2">
+                        Camera struggling? Type UPC or Title:
+                    </p>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            const val = e.target.elements.manualCode.value;
+                            if (val) onScan(val);
+                        }}
+                        className="flex gap-2"
+                    >
+                        <input
+                            name="manualCode"
+                            className="flex-1 bg-gray-700 text-white p-2 rounded"
+                            placeholder="e.g. Inception"
+                            autoFocus
+                        />
+                        <button
+                            type="submit"
+                            className="bg-blue-600 px-4 py-2 rounded text-white"
+                        >
+                            Go
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     );
