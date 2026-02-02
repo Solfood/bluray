@@ -67,21 +67,55 @@ function App() {
   const searchTMDB = async (query) => {
     setLoading(true);
     try {
-      let url;
-      if (/^\d+$/.test(query)) {
-        console.warn("UPC lookup in TMDB is limited. User might need to type title.");
+      let data = { results: [] };
+
+      // Check if query is likely a barcode (all digits, 10-13 chars)
+      const isBarcode = /^\d{10,14}$/.test(query);
+
+      if (isBarcode) {
+        // Try searching by UPC/EAN using the /find endpoint
+        // sources to try: upc, ean
+        // Note: TMDB requires the id to be passed in path, but usually they expect IMDB ID there. 
+        // For UPC, the logic is slightly different or supported via find/{id}?external_source=upc
+        // Actually, for find, the {id} IS the barcode.
+
+        // Try UPC first
+        let res = await fetch(`${TMDB_BASE_URL}/find/${query}?api_key=${keys.tmdb}&external_source=upc`);
+        let findData = await res.json();
+
+        if (findData.movie_results && findData.movie_results.length > 0) {
+          data.results = findData.movie_results;
+        } else {
+          // Try EAN if UPC failed (sometimes stored differently)
+          res = await fetch(`${TMDB_BASE_URL}/find/${query}?api_key=${keys.tmdb}&external_source=ean`);
+          findData = await res.json();
+          if (findData.movie_results && findData.movie_results.length > 0) {
+            data.results = findData.movie_results;
+          }
+        }
       }
 
-      const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${query}`);
-      const data = await res.json();
+      // If not a barcode OR barcode search returned nothing, 
+      // AND it doesn't look like a barcode (user typed title), search normally.
+      // If it WAS a barcode and we found nothing, we should stop and ask for title.
+      if (!isBarcode && data.results.length === 0) {
+        const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(query)}`);
+        data = await res.json();
+      }
+
       if (data.results && data.results.length > 0) {
         setMovieData(data.results[0]);
       } else {
-        alert("No results found. Please enter title manually.");
+        if (isBarcode) {
+          alert("Barcode not found in TMDB. Please type the Movie Title manually.");
+          setScannedCode(query); // Keep code in input
+        } else {
+          alert("No results found. Please try another title.");
+        }
       }
     } catch (e) {
       console.error(e);
-      alert("Search failed");
+      alert("Search failed: " + e.message);
     } finally {
       setLoading(false);
     }
