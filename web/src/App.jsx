@@ -66,6 +66,8 @@ function App() {
 
   const searchTMDB = async (query) => {
     setLoading(true);
+    let detectedEdition = ""; // Capture edition info from UPC
+
     try {
       let data = { results: [] };
 
@@ -85,18 +87,15 @@ function App() {
         // 2. If TMDB failed, try UPCItemDB (Translation Layer)
         if (!data.results || data.results.length === 0) {
           try {
-            console.log("TMDB direct lookup failed. Trying UPCItemDB...");
             const upcRes = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`);
             const upcData = await upcRes.json();
 
             if (upcData.items && upcData.items.length > 0) {
               let rawTitle = upcData.items[0].title;
-              console.log("UPC Found Title:", rawTitle);
+              detectedEdition = rawTitle; // Save for later!
 
               // Clean the title: Remove brackets/parentheses and what's inside (e.g. [Blu-ray])
-              // "Scanners [Criterion Collection]" -> "Scanners"
               const cleanTitle = rawTitle.split(/[\[\(]/)[0].trim();
-              console.log("Searching TMDB for:", cleanTitle);
 
               // Now search TMDB with the name
               const searchRes = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(cleanTitle)}`);
@@ -111,20 +110,18 @@ function App() {
         }
       }
 
-      // If still nothing and it wasn't a barcode, or barcode flow failed completely
-      if (!data.results || data.results.length === 0) {
-        if (!isBarcode) {
-          const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(query)}`);
-          data = await res.json();
-        }
+      if (!isBarcode && (!data.results || data.results.length === 0)) {
+        const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(query)}`);
+        data = await res.json();
       }
 
       if (data.results && data.results.length > 0) {
-        setMovieData(data.results[0]);
+        // Attach the detected edition info to the movie object
+        setMovieData({ ...data.results[0], detected_edition: detectedEdition });
       } else {
         if (isBarcode) {
           alert("Barcode not found in TMDB. Please type the Movie Title manually.");
-          setScannedCode(query); // Keep code in input
+          setScannedCode(query);
         } else {
           alert("No results found. Please try another title.");
         }
@@ -150,6 +147,7 @@ function App() {
         release_date: movieData.release_date,
         upc: scannedCode,
         added_at: new Date().toISOString(),
+        note: movieData.detected_edition || "", // User helpful context
         status: 'pending_enrichment' // Trigger for the python script
       };
 
