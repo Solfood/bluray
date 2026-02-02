@@ -48,7 +48,71 @@ function App() {
     setView('home');
   };
 
-  // ... (rest of functions same) ...
+  const loadMovies = async () => {
+    if (!keys.github) return;
+    const client = new GitHubClient(keys.github);
+    const data = await client.getMovies();
+    setMovies(data.movies);
+  };
+
+  const handleScan = async (code) => {
+    setScannedCode(code);
+    setView('add');
+    // Auto-search if we have a key
+    if (keys.tmdb) {
+      searchTMDB(code);
+    }
+  };
+
+  const searchTMDB = async (query) => {
+    setLoading(true);
+    try {
+      let url;
+      if (/^\d+$/.test(query)) {
+        console.warn("UPC lookup in TMDB is limited. User might need to type title.");
+      }
+
+      const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${query}`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        setMovieData(data.results[0]);
+      } else {
+        alert("No results found. Please enter title manually.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Search failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveMovie = async () => {
+    if (!movieData || !keys.github) return;
+    setLoading(true);
+    try {
+      const client = new GitHubClient(keys.github);
+      // Shape the data
+      const newMovie = {
+        id: movieData.id,
+        title: movieData.title,
+        poster_path: movieData.poster_path,
+        release_date: movieData.release_date,
+        upc: scannedCode,
+        added_at: new Date().toISOString(),
+        status: 'pending_enrichment' // Trigger for the python script
+      };
+
+      await client.addMovie(newMovie);
+      alert("Movie saved!");
+      setView('home');
+      loadMovies();
+    } catch (e) {
+      alert("Failed to save: " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // RENDER LOGIC CHANGES below
 
