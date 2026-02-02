@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-02T01:51:06.141Z",
+  "updated_at": "2026-02-02T01:51:20.854Z",
   "movies": [
     {
       "id": 9538,
@@ -39,6 +39,16 @@
       "upc": "043396538887",
       "added_at": "2026-02-02T01:51:06.127Z",
       "note": "Spider-Man: Into the Spider-Verse (4K Ultra HD + Blu-Ray + )",
+      "status": "pending_enrichment"
+    },
+    {
+      "id": 281957,
+      "title": "The Revenant",
+      "poster_path": "/ji3ecJphATlVgWNY0B0RVXZizdf.jpg",
+      "release_date": "2015-12-25",
+      "upc": "024543275985",
+      "added_at": "2026-02-02T01:51:20.841Z",
+      "note": "The Revenant (UHD + Digital Copy)",
       "status": "pending_enrichment"
     }
   ]
