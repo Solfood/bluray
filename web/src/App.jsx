@@ -92,30 +92,34 @@ function App() {
         if (!data.results || data.results.length === 0) {
           try {
             setStatusMsg("Checking Global Barcode Database...");
-            // Use CORS proxy because UPCItemDB doesn't allow cross-origin requests from GitHub Pages
-            const upcRes = await fetch(`https://corsproxy.io/?` + encodeURIComponent(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`));
+            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`);
+            const upcRes = await fetch(proxyUrl);
+
+            if (!upcRes.ok) throw new Error(`UPC API Status: ${upcRes.status}`);
+
             const upcData = await upcRes.json();
 
             if (upcData.items && upcData.items.length > 0) {
               let rawTitle = upcData.items[0].title;
-              detectedEdition = rawTitle; // Save for later!
-
-              // Clean the title: Remove brackets/parentheses and what's inside (e.g. [Blu-ray])
+              detectedEdition = rawTitle;
               const cleanTitle = rawTitle.split(/[\[\(]/)[0].trim();
-
-              // Now search TMDB with the name
               setStatusMsg(`Found: "${cleanTitle}". Searching info...`);
               const searchRes = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(cleanTitle)}`);
+              if (!searchRes.ok) throw new Error(`TMDB Search Error: ${searchRes.status}`);
               const searchData = await searchRes.json();
               if (searchData.results?.length > 0) {
                 data.results = searchData.results;
               }
             } else {
-              setStatusMsg("Barcode not found in global DB.");
+              console.warn("UPC API returned no items", upcData);
+              setStatusMsg(`UPC DB returned 0 results for ${query}.`);
+              // Pause briefly so user sees the message
+              await new Promise(r => setTimeout(r, 2000));
             }
           } catch (err) {
             console.warn("UPCItemDB failed", err);
-            setStatusMsg("Barcode lookup failed.");
+            setStatusMsg(`UPC Lookup Failed: ${err.message}`);
+            await new Promise(r => setTimeout(r, 2000));
           }
         }
       }
