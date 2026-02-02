@@ -73,34 +73,50 @@ function App() {
       const isBarcode = /^\d{10,14}$/.test(query);
 
       if (isBarcode) {
-        // Try searching by UPC/EAN using the /find endpoint
-        // sources to try: upc, ean
-        // Note: TMDB requires the id to be passed in path, but usually they expect IMDB ID there. 
-        // For UPC, the logic is slightly different or supported via find/{id}?external_source=upc
-        // Actually, for find, the {id} IS the barcode.
-
-        // Try UPC first
-        let res = await fetch(`${TMDB_BASE_URL}/find/${query}?api_key=${keys.tmdb}&external_source=upc`);
-        let findData = await res.json();
-
-        if (findData.movie_results && findData.movie_results.length > 0) {
-          data.results = findData.movie_results;
-        } else {
-          // Try EAN if UPC failed (sometimes stored differently)
-          res = await fetch(`${TMDB_BASE_URL}/find/${query}?api_key=${keys.tmdb}&external_source=ean`);
-          findData = await res.json();
-          if (findData.movie_results && findData.movie_results.length > 0) {
+        // 1. Try TMDB /find first (fastest, cleanest if it works)
+        try {
+          let res = await fetch(`${TMDB_BASE_URL}/find/${query}?api_key=${keys.tmdb}&external_source=upc`);
+          let findData = await res.json();
+          if (findData.movie_results?.length > 0) {
             data.results = findData.movie_results;
+          }
+        } catch (e) { console.warn("TMDB UPC Find failed", e); }
+
+        // 2. If TMDB failed, try UPCItemDB (Translation Layer)
+        if (!data.results || data.results.length === 0) {
+          try {
+            console.log("TMDB direct lookup failed. Trying UPCItemDB...");
+            const upcRes = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`);
+            const upcData = await upcRes.json();
+
+            if (upcData.items && upcData.items.length > 0) {
+              let rawTitle = upcData.items[0].title;
+              console.log("UPC Found Title:", rawTitle);
+
+              // Clean the title: Remove brackets/parentheses and what's inside (e.g. [Blu-ray])
+              // "Scanners [Criterion Collection]" -> "Scanners"
+              const cleanTitle = rawTitle.split(/[\[\(]/)[0].trim();
+              console.log("Searching TMDB for:", cleanTitle);
+
+              // Now search TMDB with the name
+              const searchRes = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(cleanTitle)}`);
+              const searchData = await searchRes.json();
+              if (searchData.results?.length > 0) {
+                data.results = searchData.results;
+              }
+            }
+          } catch (err) {
+            console.warn("UPCItemDB failed", err);
           }
         }
       }
 
-      // If not a barcode OR barcode search returned nothing, 
-      // AND it doesn't look like a barcode (user typed title), search normally.
-      // If it WAS a barcode and we found nothing, we should stop and ask for title.
-      if (!isBarcode && data.results.length === 0) {
-        const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(query)}`);
-        data = await res.json();
+      // If still nothing and it wasn't a barcode, or barcode flow failed completely
+      if (!data.results || data.results.length === 0) {
+        if (!isBarcode) {
+          const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(query)}`);
+          data = await res.json();
+        }
       }
 
       if (data.results && data.results.length > 0) {
