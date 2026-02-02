@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-02T01:50:21.592Z",
+  "updated_at": "2026-02-02T01:50:42.030Z",
   "movies": [
     {
       "id": 9538,
@@ -19,6 +19,16 @@
       "upc": "786936881141",
       "added_at": "2026-02-02T01:50:21.575Z",
       "note": "West Side Story (4K Ultra HD + Blu-ray + Digital Code)",
+      "status": "pending_enrichment"
+    },
+    {
+      "id": 458423,
+      "title": "Mamma Mia! Here We Go Again",
+      "poster_path": "/aWicerX4Y7n7tUwRAVHsVcBBpj2.jpg",
+      "release_date": "2018-07-18",
+      "upc": "191329041239",
+      "added_at": "2026-02-02T01:50:41.847Z",
+      "note": "Mamma Mia! Here We Go Again (4K Ultra HD (Sing-Along Edition)) [UHD]",
       "status": "pending_enrichment"
     }
   ]
