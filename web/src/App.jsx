@@ -123,7 +123,14 @@ function App() {
       if (!isBarcode && (!data.results || data.results.length === 0)) {
         setStatusMsg(`Searching title: "${query}"...`);
         const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(query)}`);
+
+        if (!res.ok) throw new Error(`TMDB Error: ${res.status}`);
         data = await res.json();
+      }
+
+      // Check for strict API errors (like Invalid Key) even if 200 OK (TMDB sometimes does this)
+      if (data.status_message) {
+        throw new Error(data.status_message);
       }
 
       if (data.results && data.results.length > 0) {
@@ -131,14 +138,15 @@ function App() {
         setMovieData({ ...data.results[0], detected_edition: detectedEdition });
       } else {
         if (isBarcode) {
-          setStatusMsg("Barcode not found. Please type the Title above.");
+          setStatusMsg("Barcode not found. Type title?");
           setScannedCode(query);
         } else {
-          setStatusMsg("No results found. Try another title.");
+          setStatusMsg("No movie found with that name.");
         }
       }
     } catch (e) {
       console.error(e);
+      // Make the error visible to user
       setStatusMsg("Error: " + e.message);
     } finally {
       setLoading(false);
