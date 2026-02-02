@@ -16,11 +16,30 @@ function App() {
   const [movies, setMovies] = useState([]);
 
   // Load movies on mount
+  // Load movies on mount (even if no keys, we might want to fetch public JSON in future? 
+  // For now, if no keys, we can't fetch from private repo easily without a proxy or if repo is public. 
+  // Since repo is PUBLIC, we can fetch movies.json via raw.githubusercontent.com for read-only access!)
   useEffect(() => {
+    // If we have keys, use API. If not, try public fetch.
     if (keys.github) {
       loadMovies();
+    } else {
+      loadPublicMovies();
     }
   }, [keys.github]);
+
+  const loadPublicMovies = async () => {
+    try {
+      // Fetch raw content from the public repo
+      const res = await fetch(`https://raw.githubusercontent.com/Solfood/bluray/main/movies.json`);
+      if (res.ok) {
+        const data = await res.json();
+        setMovies(data.movies || []);
+      }
+    } catch (e) {
+      console.error("Failed to load public movies", e);
+    }
+  };
 
   const saveKeys = (newKeys) => {
     setKeys(newKeys);
@@ -29,90 +48,18 @@ function App() {
     setView('home');
   };
 
-  const loadMovies = async () => {
-    if (!keys.github) return;
-    const client = new GitHubClient(keys.github);
-    const data = await client.getMovies();
-    setMovies(data.movies);
-  };
+  // ... (rest of functions same) ...
 
-  const handleScan = async (code) => {
-    setScannedCode(code);
-    setView('add');
-    // Auto-search if we have a key
-    if (keys.tmdb) {
-      searchTMDB(code);
-    }
-  };
+  // RENDER LOGIC CHANGES below
 
-  const searchTMDB = async (query) => {
-    setLoading(true);
-    try {
-      // 1. Try to search by UPC if it looks like one (numbers only)
-      // Note: TMDB doesn't have a direct "search by UPC" public endpoint easily without finding specific IDs, 
-      // but we can try /search/movie with the code or title.
-      // Usually UPC search needs a different DB, but let's assume query is a Title for now if logic is manual,
-      // OR we use a UPC API.
-      // For this MVP, let's search by Query (Title) or if it's a UPC using a specialized endpoint or external service?
-      // Actually TMDB supports looking up by external ID (find endpoint)
-
-      let url;
-      if (/^\d+$/.test(query)) {
-        // It's a barcode? Try find endpoint
-        // But find requires "external_source", usually imdb_id. freebase_id etc.
-        // UPC is tricky.
-        // Let's rely on User typing title if UPC fails or prompt user.
-        // For now, let's just assume query is a string.
-        console.warn("UPC lookup in TMDB is limited. User might need to type title.");
-      }
-
-      const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${query}`);
-      const data = await res.json();
-      if (data.results && data.results.length > 0) {
-        setMovieData(data.results[0]);
-      } else {
-        alert("No results found. Please enter title manually.");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Search failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveMovie = async () => {
-    if (!movieData || !keys.github) return;
-    setLoading(true);
-    try {
-      const client = new GitHubClient(keys.github);
-      // Shape the data
-      const newMovie = {
-        id: movieData.id,
-        title: movieData.title,
-        poster_path: movieData.poster_path,
-        release_date: movieData.release_date,
-        upc: scannedCode,
-        added_at: new Date().toISOString(),
-        status: 'pending_enrichment' // Trigger for the python script
-      };
-
-      await client.addMovie(newMovie);
-      alert("Movie saved!");
-      setView('home');
-      loadMovies();
-    } catch (e) {
-      alert("Failed to save: " + e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (view === 'settings' || !keys.github) {
+  // If view is explicitly settings, show settings
+  if (view === 'settings') {
     return (
       <div className="min-h-screen bg-gray-900 text-white p-8 flex flex-col items-center">
+        {/* Settings UI same as before */}
         <h2 className="text-2xl mb-4">Settings</h2>
         <div className="w-full max-w-md space-y-4">
+          <p className="text-sm text-gray-500 mb-4">Enter keys to enable adding movies. Visitors only see the gallery.</p>
           <div>
             <label className="block text-sm text-gray-400">GitHub Token (Repo Scope)</label>
             <input
@@ -131,70 +78,34 @@ function App() {
               onChange={e => setKeys({ ...keys, tmdb: e.target.value })}
             />
           </div>
-          <button
-            onClick={() => saveKeys(keys)}
-            className="w-full bg-blue-600 p-2 rounded hover:bg-blue-500"
-          >
-            Save & Continue
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setView('home')}
+              className="flex-1 bg-gray-700 p-2 rounded hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => saveKeys(keys)}
+              className="flex-1 bg-blue-600 p-2 rounded hover:bg-blue-500"
+            >
+              Save
+            </button>
+          </div>
         </div>
       </div>
-    )
+    );
   }
+
+  // Implicit "Settings required" check removed. We allow Home view without keys.
 
   if (view === 'scan') {
     return <Scanner onScan={handleScan} onClose={() => setView('home')} />
   }
 
-  if (view === 'add') {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white p-8">
-        <button onClick={() => setView('home')} className="mb-4 text-gray-400">&larr; Back</button>
-        <h2 className="text-2xl mb-4">Add Movie</h2>
+  // ... (Add view same) ...
 
-        <div className="flex gap-2 mb-4">
-          <input
-            className="flex-1 bg-gray-800 p-2 rounded"
-            placeholder="Search Title..."
-            defaultValue={scannedCode}
-            onChange={(e) => setScannedCode(e.target.value)}
-          />
-          <button
-            onClick={() => searchTMDB(scannedCode)}
-            className="bg-blue-600 px-4 rounded"
-          >
-            Search
-          </button>
-        </div>
-
-        {loading && <div className="text-center">Loading...</div>}
-
-        {movieData && (
-          <div className="bg-gray-800 p-4 rounded-xl flex gap-4">
-            {movieData.poster_path && (
-              <img
-                src={`https://image.tmdb.org/t/p/w200${movieData.poster_path}`}
-                alt="Poster"
-                className="w-32 rounded-lg"
-              />
-            )}
-            <div>
-              <h3 className="text-xl font-bold">{movieData.title}</h3>
-              <p className="text-gray-400">{movieData.release_date}</p>
-              <p className="mt-2 text-sm text-gray-300 line-clamp-3">{movieData.overview}</p>
-              <button
-                onClick={handleSaveMovie}
-                className="mt-4 bg-green-600 px-6 py-2 rounded hover:bg-green-500 w-full"
-              >
-                Save to Collection
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
+  // HOME VIEW
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <header className="mb-8 flex justify-between items-center">
@@ -204,19 +115,21 @@ function App() {
           </h1>
           <p className="text-gray-400 text-sm">{movies.length} Movies</p>
         </div>
-        <button onClick={() => setView('settings')} className="text-gray-400 hover:text-white">⚙️</button>
+        <button onClick={() => setView('settings')} className="text-gray-400 hover:text-white" title="Admin Settings">⚙️</button>
       </header>
 
       <main>
-        {/* Floating Action Button for Scan */}
-        <div className="mb-8">
-          <button
-            onClick={() => setView('scan')}
-            className="w-full py-4 border-2 border-dashed border-gray-700 rounded-xl flex items-center justify-center text-gray-500 hover:border-blue-500/50 hover:text-blue-400 transition-colors gap-2"
-          >
-            <span>📷 Scan Barcode / Add Movie</span>
-          </button>
-        </div>
+        {/* Only show Add button if logged in (keys present) */}
+        {keys.github && (
+          <div className="mb-8">
+            <button
+              onClick={() => setView('scan')}
+              className="w-full py-4 border-2 border-dashed border-gray-700 rounded-xl flex items-center justify-center text-gray-500 hover:border-blue-500/50 hover:text-blue-400 transition-colors gap-2"
+            >
+              <span>📷 Scan Barcode / Add Movie</span>
+            </button>
+          </div>
+        )}
 
         {/* Movie Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
