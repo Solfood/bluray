@@ -128,22 +128,18 @@ function App() {
 
       if (data.results && data.results.length > 0) {
         setStatusMsg("Movie Found!");
-        // Attach the detected edition info to the movie object
         setMovieData({ ...data.results[0], detected_edition: detectedEdition });
       } else {
         if (isBarcode) {
-          setStatusMsg("Barcode unknown. Please type title.");
-          alert("Barcode recognized, but no movie info found. Please type the Title.");
+          setStatusMsg("Barcode not found. Please type the Title above.");
           setScannedCode(query);
         } else {
-          setStatusMsg("No movie found.");
-          alert("No results found. Please try another title.");
+          setStatusMsg("No results found. Try another title.");
         }
       }
     } catch (e) {
       console.error(e);
       setStatusMsg("Error: " + e.message);
-      alert("Search failed: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -154,7 +150,6 @@ function App() {
     setLoading(true);
     try {
       const client = new GitHubClient(keys.github);
-      // Shape the data
       const newMovie = {
         id: movieData.id,
         title: movieData.title,
@@ -162,8 +157,8 @@ function App() {
         release_date: movieData.release_date,
         upc: scannedCode,
         added_at: new Date().toISOString(),
-        note: movieData.detected_edition || "", // User helpful context
-        status: 'pending_enrichment' // Trigger for the python script
+        note: movieData.detected_edition || "",
+        status: 'pending_enrichment'
       };
 
       await client.addMovie(newMovie);
@@ -177,13 +172,9 @@ function App() {
     }
   };
 
-  // RENDER LOGIC CHANGES below
-
-  // If view is explicitly settings, show settings
   if (view === 'settings') {
     return (
       <div className="min-h-screen bg-gray-900 text-white p-8 flex flex-col items-center">
-        {/* Settings UI same as before */}
         <h2 className="text-2xl mb-4">Settings</h2>
         <div className="w-full max-w-md space-y-4">
           <p className="text-sm text-gray-500 mb-4">Enter keys to enable adding movies. Visitors only see the gallery.</p>
@@ -206,25 +197,13 @@ function App() {
             />
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={() => setView('home')}
-              className="flex-1 bg-gray-700 p-2 rounded hover:bg-gray-600"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => saveKeys(keys)}
-              className="flex-1 bg-blue-600 p-2 rounded hover:bg-blue-500"
-            >
-              Save
-            </button>
+            <button onClick={() => setView('home')} className="flex-1 bg-gray-700 p-2 rounded hover:bg-gray-600">Cancel</button>
+            <button onClick={() => saveKeys(keys)} className="flex-1 bg-blue-600 p-2 rounded hover:bg-blue-500">Save</button>
           </div>
         </div>
       </div>
     );
   }
-
-  // Implicit "Settings required" check removed. We allow Home view without keys.
 
   if (view === 'scan') {
     return <Scanner onScan={handleScan} onClose={() => setView('home')} />
@@ -251,21 +230,17 @@ function App() {
           </button>
         </div>
 
-        {loading && (
-          <div className="text-center my-8 p-4 bg-gray-800 rounded-xl border border-blue-500/30">
-            <div className="animate-spin text-4xl mb-4">💿</div>
-            <p className="text-blue-400 font-mono animate-pulse">{statusMsg}</p>
+        {(loading || statusMsg) && (
+          <div className={`text-center my-8 p-4 rounded-xl border ${loading ? 'bg-gray-800 border-blue-500/30' : 'bg-gray-800 border-yellow-500/30'}`}>
+            {loading && <div className="animate-spin text-4xl mb-4">💿</div>}
+            <p className={`${loading ? 'text-blue-400' : 'text-yellow-400'} font-mono`}>{statusMsg}</p>
           </div>
         )}
 
         {movieData && !loading && (
           <div className="bg-gray-800 p-4 rounded-xl flex flex-col md:flex-row gap-4 animate-fade-in">
             {movieData.poster_path && (
-              <img
-                src={`https://image.tmdb.org/t/p/w200${movieData.poster_path}`}
-                alt="Poster"
-                className="w-32 rounded-lg mx-auto md:mx-0"
-              />
+              <img src={`https://image.tmdb.org/t/p/w200${movieData.poster_path}`} alt="Poster" className="w-32 rounded-lg mx-auto md:mx-0" />
             )}
             <div className="flex-1">
               <h3 className="text-xl font-bold">{movieData.title}</h3>
