@@ -230,7 +230,64 @@ function App() {
     return <Scanner onScan={handleScan} onClose={() => setView('home')} />
   }
 
-  // ... (Add view same) ...
+  if (view === 'add') {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white p-8">
+        <button onClick={() => setView('home')} className="mb-4 text-gray-400">&larr; Back</button>
+        <h2 className="text-2xl mb-4">Add Movie</h2>
+
+        <div className="flex gap-2 mb-4">
+          <input
+            className="flex-1 bg-gray-800 p-2 rounded"
+            placeholder="Search Title..."
+            defaultValue={scannedCode}
+            onChange={(e) => setScannedCode(e.target.value)}
+          />
+          <button
+            onClick={() => searchTMDB(scannedCode)}
+            className="bg-blue-600 px-4 rounded"
+          >
+            Search
+          </button>
+        </div>
+
+        {loading && (
+          <div className="text-center my-8 p-4 bg-gray-800 rounded-xl border border-blue-500/30">
+            <div className="animate-spin text-4xl mb-4">💿</div>
+            <p className="text-blue-400 font-mono animate-pulse">{statusMsg}</p>
+          </div>
+        )}
+
+        {movieData && !loading && (
+          <div className="bg-gray-800 p-4 rounded-xl flex flex-col md:flex-row gap-4 animate-fade-in">
+            {movieData.poster_path && (
+              <img
+                src={`https://image.tmdb.org/t/p/w200${movieData.poster_path}`}
+                alt="Poster"
+                className="w-32 rounded-lg mx-auto md:mx-0"
+              />
+            )}
+            <div className="flex-1">
+              <h3 className="text-xl font-bold">{movieData.title}</h3>
+              {movieData.detected_edition && (
+                <span className="inline-block bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded mb-2 border border-purple-500/50">
+                  Detected: {movieData.detected_edition}
+                </span>
+              )}
+              <p className="text-gray-400">{movieData.release_date}</p>
+              <p className="mt-2 text-sm text-gray-300 line-clamp-3">{movieData.overview}</p>
+              <button
+                onClick={handleSaveMovie}
+                className="mt-4 bg-green-600 px-6 py-3 rounded hover:bg-green-500 w-full font-bold shadow-lg shadow-green-900/20"
+              >
+                Save to Collection
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // HOME VIEW
   return (
