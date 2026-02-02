@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-02T01:22:46Z",
+  "updated_at": "2026-02-02T01:50:21.592Z",
   "movies": [
     {
       "id": 9538,
@@ -10,6 +10,16 @@
       "added_at": "2026-02-02T01:22:23.192Z",
       "note": "Scanners [Criterion Collection] [2 Discs] [Blu-ray/DVD] [1981]",
       "status": "failed_enrichment"
+    },
+    {
+      "id": 511809,
+      "title": "West Side Story",
+      "poster_path": "/yfz3IUoYYSY32tkb97HlUBGFsnh.jpg",
+      "release_date": "2021-12-08",
+      "upc": "786936881141",
+      "added_at": "2026-02-02T01:50:21.575Z",
+      "note": "West Side Story (4K Ultra HD + Blu-ray + Digital Code)",
+      "status": "pending_enrichment"
     }
   ]
 }
