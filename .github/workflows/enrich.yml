@@ -21,10 +21,12 @@ jobs:
           
       - name: Install dependencies
         run: |
-          pip install -r scripts/requirements.txt
+          pip install requests
           
       - name: Run enrichment script
-        run: python scripts/enrich_library.py
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: python details_scraper.py
         
       - name: Commit changes
         run: |

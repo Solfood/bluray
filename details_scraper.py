@@ -1,143 +1,81 @@
-import sys
+import json
+import os
 import requests
-from bs4 import BeautifulSoup
-import time
-import re
+import sys
+from datetime import datetime
 
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    'Referer': 'https://www.blu-ray.com/'
-}
+# GitHub Actions will provide these environment variables
+TMDB_API_KEY = os.environ.get("TMDB_API_KEY")
+GITHUB_WORKSPACE = os.environ.get("GITHUB_WORKSPACE", ".")
+MOVIES_FILE = os.path.join(GITHUB_WORKSPACE, "movies.json")
 
-def search_bluray_com(query):
-    """Searches blu-ray.com for a specific movie."""
-    print(f"Searching for '{query}'...")
-    base_url = "https://www.blu-ray.com/search/"
-    params = {
-        "quicksearch": "1",
-        "quicksearch_country": "US",
-        "quicksearch_keyword": query,
-        "section": "bluraymovies"
-    }
-    
+def load_movies():
     try:
-        response = requests.get(base_url, params=params, headers=HEADERS)
-        if response.status_code != 200:
-            print(f"Failed to search: {response.status_code}")
-            return None
-            
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Check if we landed directly on a product page (sometime happens with exact matches)
-        if "Bluray-movies" in response.url or "/movies/" in response.url:
-            print("Direct hit! Parsing page...")
-            return parse_movie_page(soup)
-            
-        # Otherwise, parse search results
-        results = []
-        if not soup.select("a"):
-             print("No links found in response! Response sample:")
-             print(response.text[:500])
-             
-        for match in soup.select("a"):
-            href = match.get('href', '')
-            text = match.get_text().strip()
-            
-            # formatting checks
-            if href and "movies" in href and "bluray" in href:
-                 print(f"  Found candidate: '{text}' -> {href}")
-                 if query.lower() in text.lower():
-                     print("  Match found!")
-                     return fetch_movie_details(href)
-        
-        print("No exact match found in search results.")
-        return None
-
-    except Exception as e:
-        print(f"Error during search: {e}")
-        return None
-
-def fetch_movie_details(url):
-    """Fetches a specific movie page."""
-    print(f"Fetching details from {url}...")
-    try:
-        response = requests.get(url, headers=HEADERS)
-        if response.status_code != 200:
-            print("Failed to fetch page.")
-            return None
-        return parse_movie_page(BeautifulSoup(response.text, 'html.parser'))
-    except Exception as e:
-        print(f"Error fetching details: {e}")
-        return None
-
-def parse_movie_page(soup):
-    """Parses technical specs from the movie page."""
-    specs = {}
-    
-    print("Parsing movie page...")
-    text = soup.get_text()
-    if len(text) < 500:
-        print(f"Page text seems too short ({len(text)} chars). Dumping body:")
-        print(soup.prettify()[:1000])
-        
-    # Regex extraction for common specs
-    
-    # Regex extraction for common specs
-    
-    # Audio
-    audio_match = re.search(r'(DTS-HD Master Audio.*?)\n', text)
-    if not audio_match:
-         audio_match = re.search(r'(Dolby TrueHD.*?)\n', text)
-    if not audio_match:
-         audio_match = re.search(r'(Dolby Atmos.*?)\n', text)
-         
-    if audio_match:
-        specs['Audio'] = audio_match.group(1).strip()
-        
-    # Video / Resolution
-    video_match = re.search(r'(Video\s*Codec:.*?)\n', text, re.IGNORECASE | re.DOTALL)
-    if video_match:
-        # Grab the line
-        specs['Video Line'] = video_match.group(1).strip()
-
-    # Subtitles
-    sub_section = soup.find(string=re.compile("Subtitles"))
-    if sub_section and sub_section.parent.parent:
-        # Try to find the container
-        specs['Subtitles_hint'] = "Found subtitle section"
-
-    # Discs
-    disc_match = re.search(r'(Blu-ray Disc.*?\n)', text)
-    if disc_match:
-        specs['Discs'] = disc_match.group(1).strip()
-        
-    # Packaging
-    packaging_match = re.search(r'(SteelBook|DigiBook|Slipcover)', text, re.IGNORECASE)
-    if packaging_match:
-        specs['Packaging'] = packaging_match.group(1)
-
-    return specs
-
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python3 details_scraper.py \"Movie Title\"")
+        with open(MOVIES_FILE, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"Error: {MOVIES_FILE} not found.")
         sys.exit(1)
 
-    query = sys.argv[1]
+def save_movies(data):
+    with open(MOVIES_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
+
+def enrich_movie(movie):
+    """
+    Fetches detailed metadata from TMDB to enrich the movie entry.
+    """
+    movie_id = movie.get('id')
+    print(f"Enriching: {movie.get('title')} (ID: {movie_id})...")
     
-    if "blu-ray.com" in query and "http" in query:
-        print("Detected direct URL...")
-        specs = fetch_movie_details(query)
-    else:
-        specs = search_bluray_com(query)
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}&append_to_response=release_dates,credits"
+    res = requests.get(url)
     
-    if specs:
-        print("\n--- Scraped Technical Specs ---")
-        for k, v in specs.items():
-            print(f"{k}: {v}")
+    if res.status_code != 200:
+        print(f"  Failed to fetch TMDB details: {res.status_code}")
+        return movie # Return unchanged
+
+    details = res.json()
+    
+    # Extract useful tech specs
+    # 1. Runtime
+    movie['runtime'] = details.get('runtime')
+    
+    # 2. Production Countries (Region hints)
+    countries = [c['iso_3166_1'] for c in details.get('production_countries', [])]
+    movie['production_countries'] = countries
+    
+    # 3. Spoken Languages (Audio hints)
+    audio = [l['english_name'] for l in details.get('spoken_languages', [])]
+    movie['audio_tracks'] = audio
+    
+    # 4. Status Update
+    movie['status'] = 'enriched'
+    movie['enriched_at'] = datetime.utcnow().isoformat()
+    
+    print(f"  > Added: {len(audio)} audio tracks, {movie['runtime']}m runtime.")
+    return movie
+
+def main():
+    if not TMDB_API_KEY:
+        print("Error: TMDB_API_KEY env var not set.")
+        sys.exit(1)
+
+    data = load_movies()
+    movies = data.get('movies', [])
+    updated = False
+    
+    for i, movie in enumerate(movies):
+        if movie.get('status') == 'pending_enrichment':
+            movies[i] = enrich_movie(movie)
+            updated = True
+            
+    if updated:
+        data['movies'] = movies
+        save_movies(data)
+        print("Successfully enriched movies and updated JSON.")
     else:
-        print("Could not retrieve full specs (Regex mismatch?), but page was accessed.")
+        print("No pending movies found.")
 
 if __name__ == "__main__":
     main()
