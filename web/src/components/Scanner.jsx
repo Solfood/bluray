@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 function Scanner({ onScan, onClose }) {
     const scannerRef = useRef(null);
@@ -11,8 +11,18 @@ function Scanner({ onScan, onClose }) {
 
         const config = {
             fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0
+            qrbox: { width: 250, height: 150 }, // Wider for barcodes
+            aspectRatio: 1.0,
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8
+            ],
+            // Use experimental features for better mobile support
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+            }
         };
 
         // Verbose false to reduce console spam
