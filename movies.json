@@ -19,7 +19,16 @@
       "upc": "786936881141",
       "added_at": "2026-02-02T01:50:21.575Z",
       "note": "West Side Story (4K Ultra HD + Blu-ray + Digital Code)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 156,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "Spanish",
+        "English"
+      ],
+      "enriched_at": "2026-02-03T06:45:56.991184"
     },
     {
       "id": 458423,
@@ -29,7 +38,16 @@
       "upc": "191329041239",
       "added_at": "2026-02-02T01:50:41.847Z",
       "note": "Mamma Mia! Here We Go Again (4K Ultra HD (Sing-Along Edition)) [UHD]",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 114,
+      "production_countries": [
+        "GB",
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-03T06:45:57.082705"
     },
     {
       "id": 324857,
@@ -39,7 +57,17 @@
       "upc": "043396538887",
       "added_at": "2026-02-02T01:51:06.127Z",
       "note": "Spider-Man: Into the Spider-Verse (4K Ultra HD + Blu-Ray + )",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 117,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "English",
+        "Japanese",
+        "Spanish"
+      ],
+      "enriched_at": "2026-02-03T06:45:57.219261"
     },
     {
       "id": 281957,
@@ -49,7 +77,19 @@
       "upc": "024543275985",
       "added_at": "2026-02-02T01:51:20.841Z",
       "note": "The Revenant (UHD + Digital Copy)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 157,
+      "production_countries": [
+        "CA",
+        "HK",
+        "TW",
+        "US"
+      ],
+      "audio_tracks": [
+        "English",
+        "French"
+      ],
+      "enriched_at": "2026-02-03T06:45:57.312577"
     },
     {
       "id": 12184,
@@ -59,7 +99,16 @@
       "upc": "043396215269",
       "added_at": "2026-02-03T06:45:38.814Z",
       "note": "The Other Boleyn Girl",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 115,
+      "production_countries": [
+        "GB",
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-03T06:45:57.410800"
     }
   ]
 }
