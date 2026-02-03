@@ -5,6 +5,10 @@ on:
     paths:
       - 'movies.json'
 
+concurrency:
+  group: enrichment-lock
+  cancel-in-progress: false
+
 jobs:
   enrich:
     runs-on: ubuntu-latest
