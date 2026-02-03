@@ -118,7 +118,16 @@
       "upc": "024543756002",
       "added_at": "2026-02-03T07:06:29.012Z",
       "note": "Season of the Witch (Blu-ray)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 95,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "Latin",
+        "English"
+      ],
+      "enriched_at": "2026-02-03T07:06:46.627941"
     }
   ]
 }
