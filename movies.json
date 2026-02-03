@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-03T06:45:39.363Z",
+  "updated_at": "2026-02-03T07:06:29.455Z",
   "movies": [
     {
       "id": 9538,
@@ -109,6 +109,16 @@
         "English"
       ],
       "enriched_at": "2026-02-03T06:45:57.410800"
+    },
+    {
+      "id": 23047,
+      "title": "Season of the Witch",
+      "poster_path": "/dNVqi8EsBtnnwfR6TgiWM51JOuS.jpg",
+      "release_date": "2011-01-07",
+      "upc": "024543756002",
+      "added_at": "2026-02-03T07:06:29.012Z",
+      "note": "Season of the Witch (Blu-ray)",
+      "status": "pending_enrichment"
     }
   ]
 }
