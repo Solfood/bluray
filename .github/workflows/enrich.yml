@@ -30,8 +30,14 @@ jobs:
         
       - name: Commit changes
         run: |
+      - name: Commit changes
+        run: |
           git config --global user.name 'BlurayBot'
           git config --global user.email 'bot@noreply.github.com'
           git add movies.json
-          # Only commit if there are changes
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-enrich movie details" && git push)
+          # Only proceed if there are changes
+          if ! git diff --quiet || ! git diff --staged --quiet; then
+            git commit -m "Auto-enrich movie details"
+            git pull --rebase origin main
+            git push
+          fi
