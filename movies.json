@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-02T01:51:20.854Z",
+  "updated_at": "2026-02-03T06:45:39.363Z",
   "movies": [
     {
       "id": 9538,
@@ -49,6 +49,16 @@
       "upc": "024543275985",
       "added_at": "2026-02-02T01:51:20.841Z",
       "note": "The Revenant (UHD + Digital Copy)",
+      "status": "pending_enrichment"
+    },
+    {
+      "id": 12184,
+      "title": "The Other Boleyn Girl",
+      "poster_path": "/q2lgC8mmAltWTkbqPM8n5EYF4XL.jpg",
+      "release_date": "2008-02-28",
+      "upc": "043396215269",
+      "added_at": "2026-02-03T06:45:38.814Z",
+      "note": "The Other Boleyn Girl",
       "status": "pending_enrichment"
     }
   ]
