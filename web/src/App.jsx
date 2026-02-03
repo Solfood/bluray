@@ -59,6 +59,25 @@ function App() {
     setMovies(data.movies);
   };
 
+  // Helper for flaky APIs (like AllOrigins/UPCItemDB)
+  const fetchWithRetry = async (url, options = {}, retries = 3, backoff = 500) => {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) {
+        if (retries > 0 && res.status >= 500) throw new Error(`Status ${res.status}`);
+        return res; // Return the error response for handling (404 etc)
+      }
+      return res;
+    } catch (e) {
+      if (retries > 0) {
+        console.log(`Fetch failed (${e.message}), retrying... attempts left: ${retries}`);
+        await new Promise(r => setTimeout(r, backoff));
+        return fetchWithRetry(url, options, retries - 1, backoff * 1.5);
+      }
+      throw e;
+    }
+  };
+
   const handleScan = async (code) => {
     setScannedCode(code);
     setView('add');
@@ -89,7 +108,10 @@ function App() {
           try {
             setStatusMsg("Checking Global Barcode Database...");
             const proxyUrl = `https://api.allorigins.win/raw?url=` + encodeURIComponent(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`);
-            const upcRes = await fetch(proxyUrl);
+
+            // Use Retry Logic here because AllOrigins/UPCDB can be flaky
+            const upcRes = await fetchWithRetry(proxyUrl, {}, 3, 1000);
+
             if (!upcRes.ok) throw new Error(`UPC API Status: ${upcRes.status}`);
             const upcData = await upcRes.json();
 

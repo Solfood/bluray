@@ -10,13 +10,14 @@ function Scanner({ onScan, onClose }) {
         if (scannerRef.current) return;
 
         const config = {
-            fps: 15, // Higher FPS
-            qrbox: { width: 300, height: 150 }, // Wider box
+            fps: 30, // Much smoother for moving targets
+            qrbox: { width: 320, height: 240 }, // Larger scanning area
             // Remove fixed aspect ratio to use full camera field
             videoConstraints: {
                 facingMode: "environment",
-                width: { ideal: 1280 }, // Prefer HD
-                height: { ideal: 720 }
+                focusMode: "continuous", // Helps with "completely still" issue
+                width: { ideal: 1920 }, // Prefer Full HD
+                height: { ideal: 1080 }
             },
             formatsToSupport: [
                 Html5QrcodeSupportedFormats.UPC_A,
