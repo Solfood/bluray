@@ -50,29 +50,46 @@ export class GitHubClient {
         }
     }
 
-    async addMovie(movie) {
+    async addMovie(movie, retries = 3) {
         if (!this.owner) await this.login();
 
-        // 1. Get current state
-        const { movies, sha } = await this.getMovies();
+        try {
+            // 1. Get current state (Fresh fetch)
+            const { movies, sha } = await this.getMovies();
 
-        // 2. Append new movie
-        const newMovies = [...movies, movie];
-        const newContent = JSON.stringify({
-            updated_at: new Date().toISOString(),
-            movies: newMovies
-        }, null, 2);
+            // 2. Append new movie
+            // Check for duplicates based on UPC to avoid double-add during retry
+            if (movies.some(m => m.upc === movie.upc && m.title === movie.title)) {
+                console.log("Movie already exists (likely from previous retry), skipping write.");
+                return movies;
+            }
 
-        // 3. Commit
-        await this.octokit.rest.repos.createOrUpdateFileContents({
-            owner: this.owner,
-            repo: REPO_NAME,
-            path: DB_PATH,
-            message: `Add movie: ${movie.title}`,
-            content: btoa(newContent),
-            sha: sha // undefined if new file
-        });
+            const newMovies = [...movies, movie];
+            const newContent = JSON.stringify({
+                updated_at: new Date().toISOString(),
+                movies: newMovies
+            }, null, 2);
 
-        return newMovies;
+            // 3. Commit
+            await this.octokit.rest.repos.createOrUpdateFileContents({
+                owner: this.owner,
+                repo: REPO_NAME,
+                path: DB_PATH,
+                message: `Add movie: ${movie.title}`,
+                content: btoa(newContent),
+                sha: sha // undefined if new file
+            });
+
+            return newMovies;
+        } catch (error) {
+            // 409: Conflict (SHA mismatch)
+            // 422: Validation Failed (often SHA related in GitHub API)
+            if (retries > 0 && (error.status === 409 || error.status === 422)) {
+                console.warn(`SHA Mismatch (Race Condition), retrying... attempts left: ${retries}`);
+                await new Promise(r => setTimeout(r, 1000)); // Wait a sec for the other scanner/bot to finish
+                return this.addMovie(movie, retries - 1);
+            }
+            throw error;
+        }
     }
 }
