@@ -137,7 +137,15 @@
       "upc": "826663242751",
       "added_at": "2026-02-12T02:49:13.583Z",
       "note": "Ring Collection (3 Films/6 Discs) (4K Ultra HD + Blu-ray)  Starring Matilda Lutz",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 96,
+      "production_countries": [
+        "JP"
+      ],
+      "audio_tracks": [
+        "Japanese"
+      ],
+      "enriched_at": "2026-02-12T02:49:32.193669"
     }
   ]
 }
