@@ -356,7 +356,18 @@
       "upc": "097360748444",
       "added_at": "2026-02-19T22:22:19.847Z",
       "note": "Saving Private Ryan (blu-ray Disc) (2 Disc)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 169,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "Czech",
+        "German",
+        "English",
+        "French"
+      ],
+      "enriched_at": "2026-02-19T22:22:38.421279"
     }
   ]
 }
