@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:13:55.035Z",
+  "updated_at": "2026-02-19T22:17:04.906Z",
   "movies": [
     {
       "id": 9538,
@@ -266,6 +266,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:14:13.656751"
+    },
+    {
+      "id": 12244,
+      "title": "9",
+      "poster_path": "/3uqXGOH4BQ2CLJWkDJZ0PzbUzOn.jpg",
+      "release_date": "2009-08-19",
+      "upc": "025195054584",
+      "added_at": "2026-02-19T22:17:04.303Z",
+      "note": "9 (Blu-ray)(2009)",
+      "status": "pending_enrichment"
     }
   ]
 }
