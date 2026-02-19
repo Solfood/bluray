@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:22:20.350Z",
+  "updated_at": "2026-02-19T22:23:12.151Z",
   "movies": [
     {
       "id": 9538,
@@ -368,6 +368,16 @@
         "French"
       ],
       "enriched_at": "2026-02-19T22:22:38.421279"
+    },
+    {
+      "id": 1422,
+      "title": "The Departed",
+      "poster_path": "/nT97ifVT2J1yMQmeq20Qblg61T.jpg",
+      "release_date": "2006-10-04",
+      "upc": "085391117292",
+      "added_at": "2026-02-19T22:23:10.503Z",
+      "note": "The Departed [Blu-ray]",
+      "status": "pending_enrichment"
     }
   ]
 }
