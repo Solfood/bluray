@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:37:58.169Z",
+  "updated_at": "2026-02-19T22:39:00.291Z",
   "movies": [
     {
       "id": 9538,
@@ -507,6 +507,16 @@
         "Latin"
       ],
       "enriched_at": "2026-02-19T22:38:16.832317"
+    },
+    {
+      "id": 5548,
+      "title": "RoboCop",
+      "poster_path": "/esmAU0fCO28FbS6bUBKLAzJrohZ.jpg",
+      "release_date": "1987-07-17",
+      "upc": "Robocop",
+      "added_at": "2026-02-19T22:38:58.461Z",
+      "note": "Remastered Unrated ",
+      "status": "pending_enrichment"
     }
   ]
 }
