@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:12:33.224Z",
+  "updated_at": "2026-02-19T22:13:10.901Z",
   "movies": [
     {
       "id": 9538,
@@ -227,6 +227,16 @@
         "Russian"
       ],
       "enriched_at": "2026-02-19T22:12:51.914642"
+    },
+    {
+      "id": 68737,
+      "title": "Seventh Son",
+      "poster_path": "/7Q8DfXSjcFSSQDOxz1Sk865wNqI.jpg",
+      "release_date": "2014-12-12",
+      "upc": "025192218736",
+      "added_at": "2026-02-19T22:13:09.128Z",
+      "note": "Seventh Son (Blu-ray + DVD )",
+      "status": "pending_enrichment"
     }
   ]
 }
