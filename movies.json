@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:06:33.709Z",
+  "updated_at": "2026-02-19T22:08:01.648Z",
   "movies": [
     {
       "id": 9538,
@@ -166,6 +166,16 @@
         "Yoruba"
       ],
       "enriched_at": "2026-02-19T22:06:51.898008"
+    },
+    {
+      "id": 24922,
+      "title": "Ebola Syndrome",
+      "poster_path": "/3537kQNixMuzl9hS6WDY7J7v3nd.jpg",
+      "release_date": "1996-06-15",
+      "upc": "814456024226",
+      "added_at": "2026-02-19T22:08:01.161Z",
+      "note": "Ebola Syndrome (4K Ultra HD + Blu-ray)",
+      "status": "pending_enrichment"
     }
   ]
 }
