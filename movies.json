@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:41:40.216Z",
+  "updated_at": "2026-02-19T22:42:09.052Z",
   "movies": [
     {
       "id": 9538,
@@ -544,6 +544,16 @@
       "upc": "786936750034",
       "added_at": "2026-02-19T22:41:40.199Z",
       "note": "No Country For Old Men (Blu-ray) (Widescreen)",
+      "status": "pending_enrichment"
+    },
+    {
+      "id": 1271,
+      "title": "300",
+      "poster_path": "/h7Lcio0c9ohxPhSZg42eTlKIVVY.jpg",
+      "release_date": "2007-03-07",
+      "upc": "085391161035",
+      "added_at": "2026-02-19T22:42:09.036Z",
+      "note": "300 (BD) [Blu-ray]  Feature Action Science Fiction  Action  War  Action  Action War",
       "status": "pending_enrichment"
     }
   ]
