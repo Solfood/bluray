@@ -257,7 +257,15 @@
       "upc": "876964005395",
       "added_at": "2026-02-19T22:13:53.302Z",
       "note": "Sushi Girl [Blu-ray/DVD] [2012]",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 98,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:14:13.656751"
     }
   ]
 }
