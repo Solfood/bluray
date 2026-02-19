@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:18:59.545Z",
+  "updated_at": "2026-02-19T22:21:06.498Z",
   "movies": [
     {
       "id": 9538,
@@ -328,6 +328,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:19:18.242450"
+    },
+    {
+      "id": 122,
+      "title": "The Lord of the Rings: The Return of the King",
+      "poster_path": "/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg",
+      "release_date": "2003-12-17",
+      "upc": "9781622242108",
+      "added_at": "2026-02-19T22:21:05.932Z",
+      "note": "3 Film Theatrical Version",
+      "status": "pending_enrichment"
     }
   ]
 }
