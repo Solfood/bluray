@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:36:33.647Z",
+  "updated_at": "2026-02-19T22:37:58.169Z",
   "movies": [
     {
       "id": 9538,
@@ -487,6 +487,16 @@
         "Hungarian"
       ],
       "enriched_at": "2026-02-19T22:36:52.960667"
+    },
+    {
+      "id": 8413,
+      "title": "Event Horizon",
+      "poster_path": "/qfluaDXv0cIdLwgQWzNB2piHL2q.jpg",
+      "release_date": "1997-08-15",
+      "upc": "Event Horizon",
+      "added_at": "2026-02-19T22:37:57.651Z",
+      "note": "4k",
+      "status": "pending_enrichment"
     }
   ]
 }
