@@ -472,7 +472,21 @@
       "upc": "883929146697",
       "added_at": "2026-02-19T22:36:33.129Z",
       "note": "Blade Runner: The Final Cut [Blu-ray]",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 118,
+      "production_countries": [
+        "US",
+        "HK",
+        "GB"
+      ],
+      "audio_tracks": [
+        "English",
+        "German",
+        "Cantonese",
+        "Japanese",
+        "Hungarian"
+      ],
+      "enriched_at": "2026-02-19T22:36:52.960667"
     }
   ]
 }
