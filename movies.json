@@ -155,7 +155,17 @@
       "upc": "883929835768",
       "added_at": "2026-02-19T22:06:33.321Z",
       "note": "Sinners (4K/UHD)(2025)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 138,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "Mandarin",
+        "English",
+        "Yoruba"
+      ],
+      "enriched_at": "2026-02-19T22:06:51.898008"
     }
   ]
 }
