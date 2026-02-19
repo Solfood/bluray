@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:09:52.031Z",
+  "updated_at": "2026-02-19T22:12:33.224Z",
   "movies": [
     {
       "id": 9538,
@@ -206,6 +206,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:10:38.762887"
+    },
+    {
+      "id": 68726,
+      "title": "Pacific Rim",
+      "poster_path": "/8wo4eN8dWKaKlxhSvBz19uvj8gA.jpg",
+      "release_date": "2013-07-11",
+      "upc": "Pacific Rim",
+      "added_at": "2026-02-19T22:12:32.605Z",
+      "note": "4k+DVD",
+      "status": "pending_enrichment"
     }
   ]
 }
