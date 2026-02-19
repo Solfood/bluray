@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:33:19.151Z",
+  "updated_at": "2026-02-19T22:34:17.869Z",
   "movies": [
     {
       "id": 9538,
@@ -406,6 +406,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:33:36.044454"
+    },
+    {
+      "id": 58595,
+      "title": "Snow White and the Huntsman",
+      "poster_path": "/8HUa5kRubYbnAD5UVpnhTGGgMTW.jpg",
+      "release_date": "2012-05-30",
+      "upc": "025192126338",
+      "added_at": "2026-02-19T22:34:16.148Z",
+      "note": "Snow White & the Huntsman (Blu-ray + DVD)",
+      "status": "pending_enrichment"
     }
   ]
 }
