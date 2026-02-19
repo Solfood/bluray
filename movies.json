@@ -705,7 +705,16 @@
       "upc": "Snatch",
       "added_at": "2026-02-19T22:47:03.595Z",
       "note": "",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 103,
+      "production_countries": [
+        "GB"
+      ],
+      "audio_tracks": [
+        "English",
+        "Russian"
+      ],
+      "enriched_at": "2026-02-19T22:47:24.299675"
     }
   ]
 }
