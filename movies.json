@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:23:12.151Z",
+  "updated_at": "2026-02-19T22:33:19.151Z",
   "movies": [
     {
       "id": 9538,
@@ -388,6 +388,16 @@
         "Cantonese"
       ],
       "enriched_at": "2026-02-19T22:23:29.570175"
+    },
+    {
+      "id": 2493,
+      "title": "The Princess Bride",
+      "poster_path": "/2FC9L9MrjBoGHYjYZjdWQdopVYb.jpg",
+      "release_date": "1987-09-25",
+      "upc": "883904360254",
+      "added_at": "2026-02-19T22:33:18.519Z",
+      "note": "The Princess Bride (30th Anniversary Edition) (Blu-ray)",
+      "status": "pending_enrichment"
     }
   ]
 }
