@@ -646,7 +646,17 @@
       "upc": "025192053733",
       "added_at": "2026-02-19T22:45:34.563Z",
       "note": "The American (Blu-ray)(2010)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 104,
+      "production_countries": [
+        "GB",
+        "US"
+      ],
+      "audio_tracks": [
+        "English",
+        "Italian"
+      ],
+      "enriched_at": "2026-02-19T22:46:11.759513"
     },
     {
       "id": 18,
@@ -656,7 +666,17 @@
       "upc": "043396215207",
       "added_at": "2026-02-19T22:45:45.426Z",
       "note": "The Fifth Element [Blu-ray] [1997]",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 126,
+      "production_countries": [
+        "FR"
+      ],
+      "audio_tracks": [
+        "English",
+        "Swedish",
+        "German"
+      ],
+      "enriched_at": "2026-02-19T22:46:11.834751"
     }
   ]
 }
