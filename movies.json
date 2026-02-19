@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:42:59.536Z",
+  "updated_at": "2026-02-19T22:43:34.830Z",
   "movies": [
     {
       "id": 9538,
@@ -600,6 +600,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:43:20.178280"
+    },
+    {
+      "id": 550,
+      "title": "Fight Club",
+      "poster_path": "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+      "release_date": "1999-10-15",
+      "upc": "Fight Club",
+      "added_at": "2026-02-19T22:43:33.169Z",
+      "note": "",
+      "status": "pending_enrichment"
     }
   ]
 }
