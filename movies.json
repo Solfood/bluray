@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:17:55.884Z",
+  "updated_at": "2026-02-19T22:18:59.545Z",
   "movies": [
     {
       "id": 9538,
@@ -308,6 +308,16 @@
         "Portuguese"
       ],
       "enriched_at": "2026-02-19T22:18:14.436944"
+    },
+    {
+      "id": 872585,
+      "title": "Oppenheimer",
+      "poster_path": "/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+      "release_date": "2023-07-19",
+      "upc": "191329253120",
+      "added_at": "2026-02-19T22:18:59.047Z",
+      "note": "Oppenheimer (4K Ultra HD + Blu-ray + Bonus Blu-ray) [UHD]",
+      "status": "pending_enrichment"
     }
   ]
 }
