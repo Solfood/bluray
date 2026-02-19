@@ -215,7 +215,18 @@
       "upc": "Pacific Rim",
       "added_at": "2026-02-19T22:12:32.605Z",
       "note": "4k+DVD",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 131,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "Cantonese",
+        "English",
+        "Japanese",
+        "Russian"
+      ],
+      "enriched_at": "2026-02-19T22:12:51.914642"
     }
   ]
 }
