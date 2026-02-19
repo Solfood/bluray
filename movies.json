@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:17:04.906Z",
+  "updated_at": "2026-02-19T22:17:55.884Z",
   "movies": [
     {
       "id": 9538,
@@ -288,6 +288,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:17:21.931769"
+    },
+    {
+      "id": 13509,
+      "title": "The Monster Squad",
+      "poster_path": "/8EVuqCcqFzQvc7X8E3fx3w4B5Td.jpg",
+      "release_date": "1987-08-14",
+      "upc": "017153100402",
+      "added_at": "2026-02-19T22:17:54.321Z",
+      "note": "The Monster Squad (20th Anniversary Edition) [Blu-ray]",
+      "status": "pending_enrichment"
     }
   ]
 }
