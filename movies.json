@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:13:10.901Z",
+  "updated_at": "2026-02-19T22:13:55.035Z",
   "movies": [
     {
       "id": 9538,
@@ -248,6 +248,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:13:29.101561"
+    },
+    {
+      "id": 60540,
+      "title": "Sushi Girl",
+      "poster_path": "/v4zrt4usen1Cd4kg0on67B4GjTT.jpg",
+      "release_date": "2012-12-07",
+      "upc": "876964005395",
+      "added_at": "2026-02-19T22:13:53.302Z",
+      "note": "Sushi Girl [Blu-ray/DVD] [2012]",
+      "status": "pending_enrichment"
     }
   ]
 }
