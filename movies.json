@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:46:21.437Z",
+  "updated_at": "2026-02-19T22:47:05.380Z",
   "movies": [
     {
       "id": 9538,
@@ -696,6 +696,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:46:39.943350"
+    },
+    {
+      "id": 107,
+      "title": "Snatch",
+      "poster_path": "/kJZoAHq1SLDdWjeNGtlHAnGpmFV.jpg",
+      "release_date": "2000-09-01",
+      "upc": "Snatch",
+      "added_at": "2026-02-19T22:47:03.595Z",
+      "note": "",
+      "status": "pending_enrichment"
     }
   ]
 }
