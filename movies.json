@@ -337,7 +337,16 @@
       "upc": "9781622242108",
       "added_at": "2026-02-19T22:21:05.932Z",
       "note": "3 Film Theatrical Version",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 201,
+      "production_countries": [
+        "NZ",
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:21:25.576360"
     }
   ]
 }
