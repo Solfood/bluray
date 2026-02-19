@@ -496,7 +496,17 @@
       "upc": "Event Horizon",
       "added_at": "2026-02-19T22:37:57.651Z",
       "note": "4k",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 96,
+      "production_countries": [
+        "GB",
+        "US"
+      ],
+      "audio_tracks": [
+        "English",
+        "Latin"
+      ],
+      "enriched_at": "2026-02-19T22:38:16.832317"
     }
   ]
 }
