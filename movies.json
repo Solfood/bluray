@@ -196,7 +196,16 @@
       "upc": "Blade",
       "added_at": "2026-02-19T22:09:51.566Z",
       "note": "4k ",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 121,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "Russian",
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:10:38.762887"
     }
   ]
 }
