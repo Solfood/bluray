@@ -415,7 +415,15 @@
       "upc": "025192126338",
       "added_at": "2026-02-19T22:34:16.148Z",
       "note": "Snow White & the Huntsman (Blu-ray + DVD)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 127,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:35:13.745197"
     },
     {
       "id": 10528,
@@ -425,7 +433,18 @@
       "upc": "883929086993",
       "added_at": "2026-02-19T22:34:28.680Z",
       "note": "Sherlock Holmes (Blu-ray + DVD + Digital )",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 129,
+      "production_countries": [
+        "US",
+        "DE",
+        "GB"
+      ],
+      "audio_tracks": [
+        "English",
+        "French"
+      ],
+      "enriched_at": "2026-02-19T22:35:13.852487"
     },
     {
       "id": 348350,
@@ -435,7 +454,15 @@
       "upc": "786936860375",
       "added_at": "2026-02-19T22:34:47.647Z",
       "note": "Solo: A Star Wars Story (Blu-ray) (Walmart Exclusive)  Walt Disney Video  Sci-Fi & Fantasy",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 135,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:35:13.983694"
     }
   ]
 }
