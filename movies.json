@@ -534,7 +534,17 @@
       "upc": "Fury",
       "added_at": "2026-02-19T22:41:29.029Z",
       "note": "",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 135,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "English",
+        "German",
+        "Spanish"
+      ],
+      "enriched_at": "2026-02-19T22:42:30.390510"
     },
     {
       "id": 6977,
@@ -544,7 +554,16 @@
       "upc": "786936750034",
       "added_at": "2026-02-19T22:41:40.199Z",
       "note": "No Country For Old Men (Blu-ray) (Widescreen)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 122,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "English",
+        "Spanish"
+      ],
+      "enriched_at": "2026-02-19T22:42:30.472447"
     },
     {
       "id": 1271,
@@ -554,7 +573,15 @@
       "upc": "085391161035",
       "added_at": "2026-02-19T22:42:09.036Z",
       "note": "300 (BD) [Blu-ray]  Feature Action Science Fiction  Action  War  Action  Action War",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 116,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:42:30.556589"
     }
   ]
 }
