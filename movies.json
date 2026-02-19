@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:34:17.869Z",
+  "updated_at": "2026-02-19T22:34:28.697Z",
   "movies": [
     {
       "id": 9538,
@@ -415,6 +415,16 @@
       "upc": "025192126338",
       "added_at": "2026-02-19T22:34:16.148Z",
       "note": "Snow White & the Huntsman (Blu-ray + DVD)",
+      "status": "pending_enrichment"
+    },
+    {
+      "id": 10528,
+      "title": "Sherlock Holmes",
+      "poster_path": "/momkKuWburNTqKBF6ez7rvhYVhE.jpg",
+      "release_date": "2009-12-23",
+      "upc": "883929086993",
+      "added_at": "2026-02-19T22:34:28.680Z",
+      "note": "Sherlock Holmes (Blu-ray + DVD + Digital )",
       "status": "pending_enrichment"
     }
   ]
