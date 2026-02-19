@@ -397,7 +397,15 @@
       "upc": "883904360254",
       "added_at": "2026-02-19T22:33:18.519Z",
       "note": "The Princess Bride (30th Anniversary Edition) (Blu-ray)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 99,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:33:36.044454"
     }
   ]
 }
