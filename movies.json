@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:44:30.129Z",
+  "updated_at": "2026-02-19T22:45:35.058Z",
   "movies": [
     {
       "id": 9538,
@@ -637,6 +637,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:44:48.700570"
+    },
+    {
+      "id": 27579,
+      "title": "The American",
+      "poster_path": "/5OEOsRaBsSxD0qBtAhus0iKDzr.jpg",
+      "release_date": "2010-08-31",
+      "upc": "025192053733",
+      "added_at": "2026-02-19T22:45:34.563Z",
+      "note": "The American (Blu-ray)(2010)",
+      "status": "pending_enrichment"
     }
   ]
 }
