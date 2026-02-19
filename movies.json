@@ -609,7 +609,16 @@
       "upc": "Fight Club",
       "added_at": "2026-02-19T22:43:33.169Z",
       "note": "",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 139,
+      "production_countries": [
+        "DE",
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:43:54.739252"
     }
   ]
 }
