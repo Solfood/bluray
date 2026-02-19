@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:39:00.291Z",
+  "updated_at": "2026-02-19T22:41:29.550Z",
   "movies": [
     {
       "id": 9538,
@@ -525,6 +525,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:39:19.993719"
+    },
+    {
+      "id": 228150,
+      "title": "Fury",
+      "poster_path": "/pfte7wdMobMF4CVHuOxyu6oqeeA.jpg",
+      "release_date": "2014-10-15",
+      "upc": "Fury",
+      "added_at": "2026-02-19T22:41:29.029Z",
+      "note": "",
+      "status": "pending_enrichment"
     }
   ]
 }
