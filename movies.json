@@ -175,7 +175,18 @@
       "upc": "814456024226",
       "added_at": "2026-02-19T22:08:01.161Z",
       "note": "Ebola Syndrome (4K Ultra HD + Blu-ray)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 100,
+      "production_countries": [
+        "HK"
+      ],
+      "audio_tracks": [
+        "Cantonese",
+        "Mandarin",
+        "Zulu",
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:08:19.652248"
     }
   ]
 }
