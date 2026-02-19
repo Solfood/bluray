@@ -686,7 +686,16 @@
       "upc": "826663223750",
       "added_at": "2026-02-19T22:46:19.746Z",
       "note": "Fargo (Collector s Edition)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 98,
+      "production_countries": [
+        "GB",
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:46:39.943350"
     }
   ]
 }
