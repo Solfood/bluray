@@ -236,7 +236,18 @@
       "upc": "025192218736",
       "added_at": "2026-02-19T22:13:09.128Z",
       "note": "Seventh Son (Blu-ray + DVD )",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 102,
+      "production_countries": [
+        "CN",
+        "CA",
+        "US",
+        "GB"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:13:29.101561"
     }
   ]
 }
