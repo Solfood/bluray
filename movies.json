@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-12T02:49:13.848Z",
+  "updated_at": "2026-02-19T22:06:33.709Z",
   "movies": [
     {
       "id": 9538,
@@ -146,6 +146,16 @@
         "Japanese"
       ],
       "enriched_at": "2026-02-12T02:49:32.193669"
+    },
+    {
+      "id": 1233413,
+      "title": "Sinners",
+      "poster_path": "/qTvFWCGeGXgBRaINLY1zqgTPSpn.jpg",
+      "release_date": "2025-04-16",
+      "upc": "883929835768",
+      "added_at": "2026-02-19T22:06:33.321Z",
+      "note": "Sinners (4K/UHD)(2025)",
+      "status": "pending_enrichment"
     }
   ]
 }
