@@ -317,7 +317,17 @@
       "upc": "191329253120",
       "added_at": "2026-02-19T22:18:59.047Z",
       "note": "Oppenheimer (4K Ultra HD + Blu-ray + Bonus Blu-ray) [UHD]",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 181,
+      "production_countries": [
+        "GB",
+        "US"
+      ],
+      "audio_tracks": [
+        "Dutch",
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:19:18.242450"
     }
   ]
 }
