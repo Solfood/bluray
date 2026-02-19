@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:34:49.068Z",
+  "updated_at": "2026-02-19T22:36:33.647Z",
   "movies": [
     {
       "id": 9538,
@@ -463,6 +463,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:35:13.983694"
+    },
+    {
+      "id": 78,
+      "title": "Blade Runner",
+      "poster_path": "/63N9uy8nd9j7Eog2axPQ8lbr3Wj.jpg",
+      "release_date": "1982-06-25",
+      "upc": "883929146697",
+      "added_at": "2026-02-19T22:36:33.129Z",
+      "note": "Blade Runner: The Final Cut [Blu-ray]",
+      "status": "pending_enrichment"
     }
   ]
 }
