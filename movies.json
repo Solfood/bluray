@@ -377,7 +377,17 @@
       "upc": "085391117292",
       "added_at": "2026-02-19T22:23:10.503Z",
       "note": "The Departed [Blu-ray]",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 151,
+      "production_countries": [
+        "HK",
+        "US"
+      ],
+      "audio_tracks": [
+        "English",
+        "Cantonese"
+      ],
+      "enriched_at": "2026-02-19T22:23:29.570175"
     }
   ]
 }
