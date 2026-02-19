@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:34:28.697Z",
+  "updated_at": "2026-02-19T22:34:49.068Z",
   "movies": [
     {
       "id": 9538,
@@ -425,6 +425,16 @@
       "upc": "883929086993",
       "added_at": "2026-02-19T22:34:28.680Z",
       "note": "Sherlock Holmes (Blu-ray + DVD + Digital )",
+      "status": "pending_enrichment"
+    },
+    {
+      "id": 348350,
+      "title": "Solo: A Star Wars Story",
+      "poster_path": "/4oD6VEccFkorEBTEDXtpLAaz0Rl.jpg",
+      "release_date": "2018-05-15",
+      "upc": "786936860375",
+      "added_at": "2026-02-19T22:34:47.647Z",
+      "note": "Solo: A Star Wars Story (Blu-ray) (Walmart Exclusive)  Walt Disney Video  Sci-Fi & Fantasy",
       "status": "pending_enrichment"
     }
   ]
