@@ -275,7 +275,19 @@
       "upc": "025195054584",
       "added_at": "2026-02-19T22:17:04.303Z",
       "note": "9 (Blu-ray)(2009)",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 79,
+      "production_countries": [
+        "CA",
+        "US",
+        "LU",
+        "GB",
+        "RU"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:17:21.931769"
     }
   ]
 }
