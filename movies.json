@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:08:01.648Z",
+  "updated_at": "2026-02-19T22:09:52.031Z",
   "movies": [
     {
       "id": 9538,
@@ -187,6 +187,16 @@
         "English"
       ],
       "enriched_at": "2026-02-19T22:08:19.652248"
+    },
+    {
+      "id": 36647,
+      "title": "Blade",
+      "poster_path": "/hx0sdduAsr4rq03RZKZzglR25z7.jpg",
+      "release_date": "1998-08-21",
+      "upc": "Blade",
+      "added_at": "2026-02-19T22:09:51.566Z",
+      "note": "4k ",
+      "status": "pending_enrichment"
     }
   ]
 }
