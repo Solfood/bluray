@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-19T22:45:46.888Z",
+  "updated_at": "2026-02-19T22:46:21.437Z",
   "movies": [
     {
       "id": 9538,
@@ -677,6 +677,16 @@
         "German"
       ],
       "enriched_at": "2026-02-19T22:46:11.834751"
+    },
+    {
+      "id": 275,
+      "title": "Fargo",
+      "poster_path": "/rt7cpEr1uP6RTZykBFhBTcRaKvG.jpg",
+      "release_date": "1996-03-08",
+      "upc": "826663223750",
+      "added_at": "2026-02-19T22:46:19.746Z",
+      "note": "Fargo (Collector s Edition)",
+      "status": "pending_enrichment"
     }
   ]
 }
