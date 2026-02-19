@@ -628,7 +628,15 @@
       "upc": "A knights tale",
       "added_at": "2026-02-19T22:44:28.199Z",
       "note": "",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 133,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-19T22:44:48.700570"
     }
   ]
 }
