@@ -297,7 +297,17 @@
       "upc": "017153100402",
       "added_at": "2026-02-19T22:17:54.321Z",
       "note": "The Monster Squad (20th Anniversary Edition) [Blu-ray]",
-      "status": "pending_enrichment"
+      "status": "enriched",
+      "runtime": 82,
+      "production_countries": [
+        "US"
+      ],
+      "audio_tracks": [
+        "German",
+        "English",
+        "Portuguese"
+      ],
+      "enriched_at": "2026-02-19T22:18:14.436944"
     }
   ]
 }
