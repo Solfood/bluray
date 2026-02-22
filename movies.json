@@ -738,9 +738,19 @@
       "upc": "760137185550",
       "added_at": "2026-02-22T03:21:37.384Z",
       "note": "Arrow Video - Evil Dead Rise [ULTRA HD]",
-      "status": "pending_enrichment",
+      "status": "enriched",
       "match_source": "tmdb",
-      "match_score": 118
+      "match_score": 118,
+      "runtime": 96,
+      "production_countries": [
+        "IE",
+        "NZ",
+        "US"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "enriched_at": "2026-02-22T03:21:49.392560"
     }
   ]
 }
