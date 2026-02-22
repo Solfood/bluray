@@ -25,7 +25,10 @@ def enrich_movie(movie):
     """
     Fetches detailed metadata from TMDB to enrich the movie entry.
     """
-    movie_id = movie.get('id')
+    movie_id = movie.get('tmdb_id') if isinstance(movie.get('tmdb_id'), int) else movie.get('id')
+    if not isinstance(movie_id, int):
+        print(f"Skipping {movie.get('title')}: no TMDB id.")
+        return movie
     print(f"Enriching: {movie.get('title')} (ID: {movie_id})...")
     
     url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}&append_to_response=release_dates,credits"
@@ -50,6 +53,7 @@ def enrich_movie(movie):
     movie['audio_tracks'] = audio
     
     # 4. Status Update
+    movie['overview'] = details.get('overview') or movie.get('overview') or ""
     movie['status'] = 'enriched'
     movie['enriched_at'] = datetime.utcnow().isoformat()
     
@@ -66,7 +70,13 @@ def main():
     updated = False
     
     for i, movie in enumerate(movies):
-        if movie.get('status') == 'pending_enrichment':
+        needs_enrichment = movie.get('status') == 'pending_enrichment'
+        needs_overview_backfill = isinstance(
+            movie.get('tmdb_id') if isinstance(movie.get('tmdb_id'), int) else movie.get('id'),
+            int
+        ) and not movie.get('overview')
+
+        if needs_enrichment or needs_overview_backfill:
             movies[i] = enrich_movie(movie)
             updated = True
             
@@ -75,7 +85,7 @@ def main():
         save_movies(data)
         print("Successfully enriched movies and updated JSON.")
     else:
-        print("No pending movies found.")
+        print("No pending movies or overview backfills found.")
 
 if __name__ == "__main__":
     main()

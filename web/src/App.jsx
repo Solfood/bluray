@@ -537,6 +537,7 @@ function App() {
         title: movieData.title,
         poster_path: movieData.poster_path || null,
         release_date: movieData.release_date || '',
+        overview: movieData.overview || '',
         upc: upcDigits || normalized,
         added_at: new Date().toISOString(),
         note: userNote,
