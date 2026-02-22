@@ -210,6 +210,16 @@ function App() {
     }));
   };
 
+  const lookupUpcItemDb = async (upc) => {
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.upcitemdb.com/prod/trial/lookup?upc=${upc}`)}`;
+    const data = await fetchJsonWithRetry(proxyUrl, {}, 1, 700, 7000).catch(() => null);
+    const rawTitle = data?.items?.[0]?.title?.trim();
+    if (!rawTitle) return null;
+
+    const cleanTitle = rawTitle.split(/[\[\(\-|:]/)[0].trim() || rawTitle;
+    return { rawTitle, cleanTitle };
+  };
+
   const rankTmdbResults = (results, preferredTitle = '', preferredYear = null) => {
     const unique = [];
     const seen = new Set();
@@ -392,6 +402,43 @@ function App() {
           _score: 70
         };
         chooseCandidates([fallback], detectedEdition);
+      } else if (keys.tmdb) {
+        setStatusMsg('Trying global UPC lookup...');
+        let upcFallback = null;
+
+        for (const upc of buildUpcCandidates(normalizedQuery)) {
+          upcFallback = await lookupUpcItemDb(upc);
+          if (upcFallback) break;
+        }
+
+        if (upcFallback) {
+          detectedEdition = upcFallback.rawTitle;
+          const searchData = await fetchJsonWithRetry(
+            `${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(upcFallback.cleanTitle)}`,
+            {},
+            1,
+            500,
+            6500
+          );
+          const fallbackRanked = rankTmdbResults(searchData?.results || [], upcFallback.cleanTitle, null);
+
+          if (fallbackRanked.length > 0) {
+            setStatusMsg('Matches found via UPC lookup.');
+            chooseCandidates(fallbackRanked, detectedEdition);
+          } else {
+            chooseCandidates([{
+              id: null,
+              title: upcFallback.cleanTitle,
+              release_date: '',
+              overview: 'Found by UPC lookup, but TMDB match is unavailable.',
+              note: upcFallback.rawTitle,
+              _source: 'upcitemdb',
+              _score: 55
+            }], detectedEdition);
+          }
+        } else {
+          setStatusMsg('Barcode not found. Try title search or manual entry.');
+        }
       } else {
         setStatusMsg('Barcode not found. Try title search or manual entry.');
       }
