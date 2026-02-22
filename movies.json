@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-22T04:17:07.295Z",
+  "updated_at": "2026-02-22T04:19:14.940Z",
   "movies": [
     {
       "id": 9538,
@@ -760,6 +760,20 @@
       ],
       "enriched_at": "2026-02-22T03:29:37.585863",
       "overview": "Unscrupulous boxing promoters, violent bookies, a Russian gangster, incompetent amateur robbers, and supposedly Jewish jewellers fight to track down a priceless stolen diamond."
+    },
+    {
+      "id": 713704,
+      "tmdb_id": 713704,
+      "title": "Evil Dead Rise",
+      "poster_path": "/5ik4ATKmNtmJU6AYD0bLm56BCVM.jpg",
+      "release_date": "2023-04-12",
+      "overview": "A reunion between two estranged sisters gets cut short by the rise of flesh-possessing demons, thrusting them into a primal battle for survival as they face the most nightmarish version of family imaginable.",
+      "upc": "760137185550",
+      "added_at": "2026-02-22T04:19:14.489Z",
+      "note": "Arrow Video - Evil Dead Rise [ULTRA HD]",
+      "status": "pending_enrichment",
+      "match_source": "tmdb",
+      "match_score": 118
     }
   ]
 }
