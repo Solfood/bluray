@@ -4,18 +4,27 @@ import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 function Scanner({ onScan, onClose }) {
     const scannerRef = useRef(null);
     const regionId = "html5qr-code-full-region";
+    const lastValueRef = useRef("");
+    const streakRef = useRef(0);
+    const acceptedAtRef = useRef(0);
+    const [hint, setHint] = useState("Align barcode inside the frame");
+
+    const normalizeCode = (value) => {
+        const trimmed = (value || "").trim();
+        if (!trimmed) return "";
+        const digits = trimmed.replace(/\D/g, "");
+        return digits.length >= 8 ? digits : trimmed;
+    };
 
     useEffect(() => {
         // Prevent double initialization
         if (scannerRef.current) return;
 
         const config = {
-            fps: 30, // Much smoother for moving targets
+            fps: 12,
             qrbox: { width: 320, height: 240 }, // Larger scanning area
-            // Remove fixed aspect ratio to use full camera field
             videoConstraints: {
                 facingMode: "environment",
-                focusMode: "continuous", // Helps with "completely still" issue
                 width: { ideal: 1920 }, // Prefer Full HD
                 height: { ideal: 1080 }
             },
@@ -35,10 +44,27 @@ function Scanner({ onScan, onClose }) {
 
         scanner.render(
             (decodedText) => {
-                console.log("Scan success:", decodedText);
-                // Don't clear manually here. 
-                // Just trigger callback -> React unmounts -> cleanup() runs.
-                onScan(decodedText);
+                const now = Date.now();
+                if (now - acceptedAtRef.current < 2000) return;
+
+                const normalized = normalizeCode(decodedText);
+                if (!normalized) return;
+
+                if (normalized === lastValueRef.current) {
+                    streakRef.current += 1;
+                } else {
+                    lastValueRef.current = normalized;
+                    streakRef.current = 1;
+                }
+
+                const requiredStreak = /^\d{8,14}$/.test(normalized) ? 2 : 1;
+                setHint(`Reading... ${streakRef.current}/${requiredStreak}`);
+
+                if (streakRef.current >= requiredStreak) {
+                    acceptedAtRef.current = now;
+                    setHint(`Detected: ${normalized}`);
+                    onScan(normalized);
+                }
             },
             (error) => {
                 // Ignore errors
@@ -70,6 +96,7 @@ function Scanner({ onScan, onClose }) {
 
                 <h2 className="text-xl font-bold mb-4 text-center">Scan Barcode</h2>
                 <div id={regionId} className="overflow-hidden rounded-lg bg-black min-h-[300px]" />
+                <p className="mt-3 text-xs text-center text-gray-400">{hint}</p>
 
                 <div className="mt-4 text-center">
                     <p className="text-sm text-gray-500 mb-2">

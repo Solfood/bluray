@@ -1,32 +1,90 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Scanner from './components/Scanner';
 import MovieGrid from './components/MovieGrid';
 import MovieDetail from './components/MovieDetail';
 import { GitHubClient } from './utils/github';
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+const OPEN_DB_BASE_URL = "https://raw.githubusercontent.com/Solfood/bluray-database/main";
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const normalizeTitle = (value) =>
+  (value || "")
+    .toLowerCase()
+    .replace(/\(.*?\)|\[.*?\]/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+const safeYear = (value) => {
+  if (!value) return null;
+  const y = String(value).slice(0, 4);
+  return /^\d{4}$/.test(y) ? Number(y) : null;
+};
+
+const normalizeScanOrInput = (value) => {
+  const trimmed = (value || "").trim();
+  if (!trimmed) return "";
+  const digits = trimmed.replace(/\D/g, "");
+  return digits.length >= 8 ? digits : trimmed;
+};
+
+const buildUpcCandidates = (rawUpc) => {
+  const digits = (rawUpc || "").replace(/\D/g, "");
+  if (!digits) return [];
+
+  const variants = new Set([digits]);
+  if (digits.length === 13 && digits.startsWith("0")) variants.add(digits.slice(1));
+  if (digits.length === 12) variants.add(`0${digits}`);
+
+  return [...variants];
+};
+
+const scoreMovieCandidate = (candidate, preferredTitle, preferredYear) => {
+  let score = 0;
+  const candTitle = normalizeTitle(candidate.title || "");
+  const prefTitle = normalizeTitle(preferredTitle || "");
+
+  if (candTitle && prefTitle) {
+    if (candTitle === prefTitle) score += 100;
+    else if (candTitle.includes(prefTitle) || prefTitle.includes(candTitle)) score += 65;
+
+    const candWords = new Set(candTitle.split(" ").filter(Boolean));
+    const prefWords = prefTitle.split(" ").filter(Boolean);
+    const overlap = prefWords.filter((w) => candWords.has(w)).length;
+    score += Math.min(overlap * 6, 30);
+  }
+
+  const candYear = safeYear(candidate.release_date);
+  if (candYear && preferredYear) {
+    const delta = Math.abs(candYear - preferredYear);
+    if (delta === 0) score += 35;
+    else if (delta === 1) score += 20;
+    else if (delta <= 3) score += 8;
+  }
+
+  return score;
+};
 
 function App() {
-  const [view, setView] = useState('home'); // home, scan, add, settings
+  const [view, setView] = useState('home');
   const [keys, setKeys] = useState(() => {
     const saved = localStorage.getItem('bluray_keys');
     return saved ? JSON.parse(saved) : { tmdb: '', github: '' };
   });
 
-  // State
-  const [scannedCode, setScannedCode] = useState(null);
-  const [movieData, setMovieData] = useState(null); // The movie pending addition
+  const [scannedCode, setScannedCode] = useState("");
+  const [movieData, setMovieData] = useState(null);
+  const [searchCandidates, setSearchCandidates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [movies, setMovies] = useState([]);
   const [statusMsg, setStatusMsg] = useState("");
-  const [selectedMovie, setSelectedMovie] = useState(null); // Detailed view
-  const [searchTerm, setSearchTerm] = useState(""); // Local filtering
-
-  // "Edition" note state for the Add Screen
-  // We initialize this when movieData is set
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [userNote, setUserNote] = useState("");
 
-  // Load movies on mount
+  const openDbIndexesRef = useRef({ loaded: false, upc: null, title: null });
+
   useEffect(() => {
     if (keys.github) {
       loadMovies();
@@ -35,14 +93,43 @@ function App() {
     }
   }, [keys.github]);
 
+  const fetchWithTimeout = async (url, options = {}, timeoutMs = 7000) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
+  const fetchJsonWithRetry = async (url, options = {}, retries = 2, backoff = 600, timeoutMs = 7000) => {
+    try {
+      const res = await fetchWithTimeout(url, options, timeoutMs);
+      if (!res.ok) {
+        if (retries > 0 && res.status >= 500) throw new Error(`Status ${res.status}`);
+        return null;
+      }
+      return await res.json();
+    } catch (e) {
+      if (retries > 0) {
+        await sleep(backoff);
+        return fetchJsonWithRetry(url, options, retries - 1, Math.floor(backoff * 1.5), timeoutMs);
+      }
+      throw e;
+    }
+  };
+
   const loadPublicMovies = async () => {
     try {
-      const res = await fetch(`https://raw.githubusercontent.com/Solfood/bluray/main/movies.json`);
+      const res = await fetchWithTimeout('https://raw.githubusercontent.com/Solfood/bluray/main/movies.json', {}, 9000);
       if (res.ok) {
         const data = await res.json();
         setMovies(data.movies || []);
       }
-    } catch (e) { console.error("Failed to load public movies", e); }
+    } catch (e) {
+      console.error('Failed to load public movies', e);
+    }
   };
 
   const saveKeys = (newKeys) => {
@@ -59,118 +146,258 @@ function App() {
     setMovies(data.movies);
   };
 
-  // Helper for flaky APIs (like AllOrigins/UPCItemDB)
-  const fetchWithRetry = async (url, options = {}, retries = 3, backoff = 500) => {
-    try {
-      const res = await fetch(url, options);
-      if (!res.ok) {
-        if (retries > 0 && res.status >= 500) throw new Error(`Status ${res.status}`);
-        return res; // Return the error response for handling (404 etc)
+  const loadOpenDbIndexes = async () => {
+    if (openDbIndexesRef.current.loaded) return openDbIndexesRef.current;
+
+    const [upcIndex, titleIndex] = await Promise.all([
+      fetchJsonWithRetry(`${OPEN_DB_BASE_URL}/upc_index.json`, {}, 1, 500, 6000).catch(() => null),
+      fetchJsonWithRetry(`${OPEN_DB_BASE_URL}/title_index.json`, {}, 1, 500, 6000).catch(() => null)
+    ]);
+
+    openDbIndexesRef.current = {
+      loaded: true,
+      upc: upcIndex?.index || upcIndex || null,
+      title: titleIndex?.index || titleIndex || null
+    };
+
+    return openDbIndexesRef.current;
+  };
+
+  const lookupOpenDbByUpc = async (rawUpc) => {
+    const upcVariants = buildUpcCandidates(rawUpc);
+    if (upcVariants.length === 0) return null;
+
+    const indexes = await loadOpenDbIndexes().catch(() => ({ upc: null }));
+    if (indexes?.upc) {
+      for (const upc of upcVariants) {
+        if (indexes.upc[upc]) {
+          return { ...indexes.upc[upc], upc, source: 'open-db-index' };
+        }
       }
-      return res;
-    } catch (e) {
-      if (retries > 0) {
-        console.log(`Fetch failed (${e.message}), retrying... attempts left: ${retries}`);
-        await new Promise(r => setTimeout(r, backoff));
-        return fetchWithRetry(url, options, retries - 1, backoff * 1.5);
+    }
+
+    for (const upc of upcVariants) {
+      if (upc.length < 3) continue;
+      const chunkUrl = `${OPEN_DB_BASE_URL}/upc/${upc[0]}/${upc[1]}/${upc[2]}/${upc}.json`;
+      try {
+        const upcData = await fetchJsonWithRetry(chunkUrl, {}, 1, 400, 5500);
+        if (upcData) return { ...upcData, upc, source: 'open-db-chunk' };
+      } catch (e) {
+        console.warn('Open DB chunk lookup failed', e);
       }
-      throw e;
+    }
+
+    return null;
+  };
+
+  const lookupOpenDbByTitle = async (title) => {
+    const normalized = normalizeTitle(title);
+    if (!normalized) return [];
+
+    const indexes = await loadOpenDbIndexes().catch(() => ({ title: null }));
+    const entry = indexes?.title?.[normalized];
+    if (!entry) return [];
+
+    const records = Array.isArray(entry) ? entry : [entry];
+    return records.map((r) => ({
+      id: null,
+      title: r.title,
+      release_date: r.year ? `${r.year}-01-01` : '',
+      overview: 'Found in Open Database.',
+      note: r.edition || '',
+      _source: 'open-db-title-index',
+      _score: 45
+    }));
+  };
+
+  const rankTmdbResults = (results, preferredTitle = '', preferredYear = null) => {
+    const unique = [];
+    const seen = new Set();
+
+    for (const item of results || []) {
+      const key = item.id ? `id:${item.id}` : `t:${normalizeTitle(item.title)}:${safeYear(item.release_date) || 'na'}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(item);
+    }
+
+    return unique
+      .map((item) => ({ ...item, _score: scoreMovieCandidate(item, preferredTitle, preferredYear), _source: 'tmdb' }))
+      .sort((a, b) => b._score - a._score);
+  };
+
+  const selectMovieCandidate = (candidate, detectedEdition = '') => {
+    if (!candidate) return;
+    const merged = {
+      ...candidate,
+      detected_edition: detectedEdition,
+      note: candidate.note || detectedEdition || ''
+    };
+    setMovieData(merged);
+    setUserNote(merged.note || '');
+    setStatusMsg('Movie selected.');
+  };
+
+  const chooseCandidates = (candidates, detectedEdition = '') => {
+    if (!candidates || candidates.length === 0) {
+      setMovieData(null);
+      setSearchCandidates([]);
+      return;
+    }
+
+    if (candidates.length === 1) {
+      setSearchCandidates(candidates);
+      selectMovieCandidate(candidates[0], detectedEdition);
+      return;
+    }
+
+    const top = candidates[0];
+    const second = candidates[1];
+    const confidentAutoPick = top._score >= 120 && (!second || top._score - second._score >= 25);
+
+    setSearchCandidates(candidates.slice(0, 8));
+
+    if (confidentAutoPick) {
+      selectMovieCandidate(top, detectedEdition);
+    } else {
+      setMovieData(null);
+      setUserNote(detectedEdition || '');
+      setStatusMsg('Multiple matches found. Choose the correct movie.');
     }
   };
 
   const handleScan = async (code) => {
-    setScannedCode(code);
+    const normalized = normalizeScanOrInput(code);
+    setScannedCode(normalized);
     setView('add');
-    if (keys.tmdb) searchTMDB(code);
+    if (normalized) searchTMDB(normalized);
   };
 
   const searchTMDB = async (query) => {
+    const normalizedQuery = normalizeScanOrInput(query);
+    if (!normalizedQuery) {
+      setStatusMsg('Enter a title or UPC.');
+      return;
+    }
+
     setLoading(true);
-    setStatusMsg("Searching...");
-    let detectedEdition = "";
+    setStatusMsg('Searching...');
+    setMovieData(null);
+    setSearchCandidates([]);
+
+    let detectedEdition = '';
 
     try {
-      let data = { results: [] };
-      const isBarcode = /^\d{10,14}$/.test(query);
+      const isBarcode = /^\d{8,14}$/.test(normalizedQuery);
+      let preferredTitle = '';
+      let preferredYear = null;
+      let tmdbResults = [];
 
-      if (isBarcode) {
-        setStatusMsg(`Analyzing Barcode: ${query}...`);
+      if (isBarcode && keys.tmdb) {
+        setStatusMsg(`Analyzing barcode: ${normalizedQuery}...`);
 
-        // 1. TMDB Find
-        try {
-          const res = await fetch(`${TMDB_BASE_URL}/find/${query}?api_key=${keys.tmdb}&external_source=upc`);
-          const findData = await res.json();
-          if (findData.movie_results?.length > 0) data.results = findData.movie_results;
-        } catch (e) { console.warn("TMDB UPC Find failed", e); }
-
-        // 2. Custom GitHub Database Fallback
-        if (!data.results || data.results.length === 0) {
+        for (const upc of buildUpcCandidates(normalizedQuery)) {
           try {
-            setStatusMsg("Checking Open Database...");
-            // Clean up the query
-            let cleanQuery = query.replace(/\D/g, '');
-            if (cleanQuery.length > 0) {
-              if (cleanQuery.length < 3) cleanQuery = cleanQuery.padStart(3, '0');
-
-              const chunkUrl = `https://raw.githubusercontent.com/Solfood/bluray-database/main/upc/${cleanQuery[0]}/${cleanQuery[1]}/${cleanQuery[2]}/${cleanQuery}.json`;
-
-              const upcRes = await fetch(chunkUrl);
-
-              if (upcRes.ok) {
-                const upcData = await upcRes.json();
-
-                let rawTitle = upcData.edition || upcData.title;
-                detectedEdition = rawTitle;
-                const cleanTitle = upcData.title.trim();
-
-                setStatusMsg(`Found: "${cleanTitle}". Fetching poster...`);
-
-                // If TMDB ID is available in our db, we could use it, but for now we search by title
-                const searchRes = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(cleanTitle)}`);
-                if (searchRes.ok) {
-                  const searchData = await searchRes.json();
-                  if (searchData.results?.length > 0) {
-                    data.results = searchData.results;
-                  } else {
-                    // Fallback if TMDB search fails but we have DB data
-                    data.results = [{
-                      title: cleanTitle,
-                      overview: "Found in Open Database.",
-                      release_date: upcData.year ? `${upcData.year}-01-01` : ""
-                    }];
-                  }
-                }
-              } else {
-                setStatusMsg(`UPC not found in database.`);
-                await new Promise(r => setTimeout(r, 1500));
-              }
+            const findData = await fetchJsonWithRetry(
+              `${TMDB_BASE_URL}/find/${upc}?api_key=${keys.tmdb}&external_source=upc`,
+              {},
+              1,
+              500,
+              6000
+            );
+            if (findData?.movie_results?.length) {
+              tmdbResults = findData.movie_results;
+              break;
             }
-          } catch (err) {
-            console.warn("GitHub DB Fetch failed", err);
-            setStatusMsg(`DB Lookup Failed: ${err.message}`);
-            await new Promise(r => setTimeout(r, 1500));
+          } catch (e) {
+            console.warn('TMDB UPC find failed', e);
           }
         }
       }
 
-      if (!isBarcode && (!data.results || data.results.length === 0)) {
-        setStatusMsg(`Searching title: "${query}"...`);
-        const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(query)}`);
-        if (!res.ok) throw new Error(`TMDB Error: ${res.status}`);
-        data = await res.json();
+      let openDbRecord = null;
+      if (isBarcode && tmdbResults.length === 0) {
+        setStatusMsg('Checking Open Database...');
+        openDbRecord = await lookupOpenDbByUpc(normalizedQuery);
+
+        if (openDbRecord) {
+          preferredTitle = (openDbRecord.title || '').trim();
+          preferredYear = safeYear(openDbRecord.year);
+          detectedEdition = openDbRecord.edition || openDbRecord.title || '';
+
+          if (keys.tmdb && preferredTitle) {
+            setStatusMsg(`Found "${preferredTitle}". Matching TMDB...`);
+            const searchData = await fetchJsonWithRetry(
+              `${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(preferredTitle)}`,
+              {},
+              1,
+              500,
+              6500
+            );
+            tmdbResults = searchData?.results || [];
+          }
+        }
       }
 
-      if (data.status_message) throw new Error(data.status_message);
+      if (!isBarcode) {
+        preferredTitle = normalizedQuery;
 
-      if (data.results && data.results.length > 0) {
-        setStatusMsg("Movie Found!");
-        setMovieData({ ...data.results[0], detected_edition: detectedEdition });
-        setUserNote(detectedEdition); // Pre-fill the editable note!
+        const openDbTitleCandidates = await lookupOpenDbByTitle(normalizedQuery);
+
+        if (keys.tmdb) {
+          setStatusMsg(`Searching title: "${normalizedQuery}"...`);
+          const searchData = await fetchJsonWithRetry(
+            `${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(normalizedQuery)}`,
+            {},
+            1,
+            500,
+            6500
+          );
+          tmdbResults = searchData?.results || [];
+        }
+
+        const rankedTmdb = rankTmdbResults(tmdbResults, preferredTitle, null);
+        const merged = [...rankedTmdb, ...openDbTitleCandidates];
+
+        if (merged.length > 0) {
+          chooseCandidates(merged, detectedEdition);
+        } else {
+          chooseCandidates([{
+            id: null,
+            title: normalizedQuery,
+            release_date: '',
+            overview: 'Manual title entry. TMDB match unavailable.',
+            note: '',
+            _source: 'manual-title',
+            _score: 1
+          }], '');
+        }
+
+        return;
+      }
+
+      const ranked = rankTmdbResults(tmdbResults, preferredTitle, preferredYear);
+
+      if (ranked.length > 0) {
+        setStatusMsg('Matches found.');
+        chooseCandidates(ranked, detectedEdition);
+      } else if (openDbRecord) {
+        const fallback = {
+          id: null,
+          title: openDbRecord.title,
+          release_date: openDbRecord.year ? `${openDbRecord.year}-01-01` : '',
+          overview: 'Found in Open Database. TMDB details unavailable.',
+          note: openDbRecord.edition || '',
+          _source: openDbRecord.source,
+          _score: 70
+        };
+        chooseCandidates([fallback], detectedEdition);
       } else {
-        setStatusMsg(isBarcode ? "Barcode not found. Type title?" : "No movie found.");
+        setStatusMsg('Barcode not found. Try title search or manual entry.');
       }
     } catch (e) {
-      setStatusMsg("Error: " + e.message);
+      console.error(e);
+      setStatusMsg(`Lookup failed: ${e.message}`);
     } finally {
       setLoading(false);
     }
@@ -178,33 +405,41 @@ function App() {
 
   const handleSaveMovie = async () => {
     if (!movieData || !keys.github) return;
+
     setLoading(true);
     try {
       const client = new GitHubClient(keys.github);
+      const normalized = normalizeScanOrInput(scannedCode);
+      const upcDigits = normalized.replace(/\D/g, '');
+      const hasTmdbId = typeof movieData.id === 'number';
+
       const newMovie = {
-        id: movieData.id,
+        id: hasTmdbId ? movieData.id : `manual-${Date.now()}`,
+        tmdb_id: hasTmdbId ? movieData.id : null,
         title: movieData.title,
-        poster_path: movieData.poster_path,
-        release_date: movieData.release_date,
-        upc: scannedCode,
+        poster_path: movieData.poster_path || null,
+        release_date: movieData.release_date || '',
+        upc: upcDigits || normalized,
         added_at: new Date().toISOString(),
-        note: userNote, // SAVE THE EDITED NOTE
-        status: 'pending_enrichment'
+        note: userNote,
+        status: hasTmdbId ? 'pending_enrichment' : 'needs_tmdb_match',
+        match_source: movieData._source || 'manual',
+        match_score: movieData._score || null
       };
 
       await client.addMovie(newMovie);
       setView('home');
       loadMovies();
       setMovieData(null);
-      setScannedCode("");
+      setSearchCandidates([]);
+      setScannedCode('');
+      setStatusMsg('');
     } catch (e) {
-      alert("Failed to save: " + e.message);
+      alert(`Failed to save: ${e.message}`);
     } finally {
       setLoading(false);
     }
   };
-
-  // --- Views ---
 
   if (view === 'settings' || (!keys.github && view !== 'home')) {
     return (
@@ -213,11 +448,11 @@ function App() {
         <div className="w-full max-w-md space-y-6 bg-gray-800 p-6 rounded-2xl shadow-xl">
           <div>
             <label className="block text-sm text-gray-400 mb-2">GitHub Token</label>
-            <input type="password" className="w-full bg-gray-900 p-4 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500" value={keys.github} onChange={e => setKeys({ ...keys, github: e.target.value })} />
+            <input type="password" className="w-full bg-gray-900 p-4 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500" value={keys.github} onChange={(e) => setKeys({ ...keys, github: e.target.value })} />
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-2">TMDB API Key</label>
-            <input type="password" className="w-full bg-gray-900 p-4 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500" value={keys.tmdb} onChange={e => setKeys({ ...keys, tmdb: e.target.value })} />
+            <input type="password" className="w-full bg-gray-900 p-4 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500" value={keys.tmdb} onChange={(e) => setKeys({ ...keys, tmdb: e.target.value })} />
           </div>
           <div className="flex gap-4 pt-4">
             <button onClick={() => setView('home')} className="flex-1 bg-gray-700 py-3 rounded-xl font-bold">Cancel</button>
@@ -228,7 +463,7 @@ function App() {
     );
   }
 
-  if (view === 'scan') return <Scanner onScan={handleScan} onClose={() => setView('home')} />
+  if (view === 'scan') return <Scanner onScan={handleScan} onClose={() => setView('home')} />;
 
   if (view === 'add') {
     return (
@@ -239,26 +474,46 @@ function App() {
           </button>
           <h2 className="text-3xl font-bold mb-6">Add Movie</h2>
 
-          {/* Search Box */}
           <div className="flex gap-2 mb-8">
             <input
               className="flex-1 bg-gray-800 p-4 rounded-xl text-lg outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Search Title or UPC..."
-              defaultValue={scannedCode}
+              value={scannedCode}
               onChange={(e) => setScannedCode(e.target.value)}
             />
             <button onClick={() => searchTMDB(scannedCode)} className="bg-blue-600 px-6 rounded-xl font-bold">Find</button>
           </div>
 
-          {/* Status Log */}
           {(loading || statusMsg) && (
-            <div className={`text-center mb-8 p-6 rounded-2xl border ${loading ? 'bg-gray-800 border-blue-500/30' : 'bg-gray-800/50 border-gray-700'}`}>
-              {loading && <div className="animate-spin text-4xl mb-4">💿</div>}
+            <div className={`text-center mb-6 p-5 rounded-2xl border ${loading ? 'bg-gray-800 border-blue-500/30' : 'bg-gray-800/50 border-gray-700'}`}>
+              {loading && <div className="animate-spin text-4xl mb-3">💿</div>}
               <p className={`font-mono text-sm ${loading ? 'text-blue-400' : 'text-gray-400'}`}>{statusMsg}</p>
             </div>
           )}
 
-          {/* Result Card */}
+          {searchCandidates.length > 1 && !movieData && (
+            <div className="bg-gray-800/70 border border-gray-700 rounded-2xl p-4 mb-6">
+              <h3 className="text-sm uppercase tracking-wide text-gray-400 mb-3">Select the correct match</h3>
+              <div className="space-y-2">
+                {searchCandidates.map((candidate) => (
+                  <button
+                    key={`${candidate.id ?? candidate.title}-${candidate.release_date ?? ''}`}
+                    onClick={() => selectMovieCandidate(candidate, userNote)}
+                    className="w-full text-left p-3 rounded-lg bg-gray-900/60 hover:bg-gray-900 border border-gray-700 hover:border-blue-500 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold">{candidate.title}</p>
+                        <p className="text-xs text-gray-400">{candidate.release_date?.split('-')[0] || 'Unknown year'} • score {candidate._score ?? 0}</p>
+                      </div>
+                      <span className="text-[10px] uppercase text-gray-500">{candidate._source || 'match'}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {movieData && !loading && (
             <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl animate-fade-in">
               <div className="flex flex-col md:flex-row gap-6">
@@ -268,10 +523,9 @@ function App() {
                 <div className="flex-1 space-y-4">
                   <div>
                     <h3 className="text-2xl font-bold leading-tight">{movieData.title}</h3>
-                    <p className="text-gray-400">{movieData.release_date?.split('-')[0]}</p>
+                    <p className="text-gray-400">{movieData.release_date?.split('-')[0] || 'Unknown year'}</p>
                   </div>
 
-                  {/* Editable Note Field */}
                   <div>
                     <label className="block text-xs uppercase font-bold text-gray-500 mb-1">Edition / Notes</label>
                     <input
@@ -282,7 +536,7 @@ function App() {
                     />
                   </div>
 
-                  <p className="text-sm text-gray-300 line-clamp-3 leading-relaxed">{movieData.overview}</p>
+                  <p className="text-sm text-gray-300 leading-relaxed">{movieData.overview || 'No summary available.'}</p>
 
                   <button
                     onClick={handleSaveMovie}
@@ -296,20 +550,16 @@ function App() {
           )}
         </div>
       </div>
-    )
+    );
   }
 
-  // --- Home View (Grid) ---
-
-  // Filter movies
-  const filteredMovies = movies.filter(m =>
+  const filteredMovies = movies.filter((m) =>
     m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (m.note || "").toLowerCase().includes(searchTerm.toLowerCase())
+    (m.note || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="min-h-screen bg-gray-900 text-white pb-safe">
-      {/* Sticky Header */}
       <header className="sticky top-0 z-20 bg-gray-900/90 backdrop-blur-md border-b border-gray-800 p-4">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center justify-between">
@@ -322,7 +572,6 @@ function App() {
             </div>
           </div>
 
-          {/* Search Bar */}
           <div className="relative flex-1 max-w-md">
             <input
               type="text"
@@ -356,7 +605,6 @@ function App() {
         />
       </main>
 
-      {/* Floating Action Button (Mobile Only) */}
       {keys.github && (
         <button
           onClick={() => setView('scan')}
@@ -366,7 +614,6 @@ function App() {
         </button>
       )}
 
-      {/* Detail Modal */}
       {selectedMovie && (
         <MovieDetail
           movie={selectedMovie}
@@ -374,7 +621,7 @@ function App() {
         />
       )}
     </div>
-  )
+  );
 }
 
 export default App
