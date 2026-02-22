@@ -1,0 +1,5 @@
+[submodule "database_files"]
+	path = database_files
+	url = git@github.com:Solfood/bluray-database.git
+	branch = master
+	ignore = dirty
