@@ -654,6 +654,8 @@ function App() {
 
   const handleDeleteMovie = async (movieToDelete) => {
     if (!movieToDelete || !keys.github) return;
+    const confirmed = window.confirm(`Delete "${movieToDelete.title}" from your collection?`);
+    if (!confirmed) return;
 
     const previous = [...movies];
     setSelectedMovie(null);
