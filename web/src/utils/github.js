@@ -6,6 +6,24 @@ const DB_PATH = "movies.json";
 // For now, let's assume the user forks this or uses it in a repo named 'bluray'.
 const REPO_NAME = "bluray";
 
+const toBase64Utf8 = (value) => {
+    const bytes = new TextEncoder().encode(value);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 1) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+};
+
+const fromBase64Utf8 = (value) => {
+    const binary = atob(value);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return new TextDecoder().decode(bytes);
+};
+
 const movieMatches = (a, b) => {
     if (!a || !b) return false;
     if (a.added_at && b.added_at && a.added_at === b.added_at) return true;
@@ -42,8 +60,8 @@ export class GitHubClient {
                 path: DB_PATH,
             });
 
-            // Decode Base64 content
-            const content = atob(data.content);
+            // Decode Base64 content (UTF-8 safe)
+            const content = fromBase64Utf8(data.content);
             const json = JSON.parse(content);
             return {
                 movies: json.movies || [],
@@ -84,7 +102,7 @@ export class GitHubClient {
                 repo: REPO_NAME,
                 path: DB_PATH,
                 message: `Add movie: ${movie.title}`,
-                content: btoa(newContent),
+                content: toBase64Utf8(newContent),
                 sha: sha // undefined if new file
             });
 
@@ -123,7 +141,7 @@ export class GitHubClient {
                 repo: REPO_NAME,
                 path: DB_PATH,
                 message: `Remove movie: ${movie.title || movie.id || "unknown"}`,
-                content: btoa(newContent),
+                content: toBase64Utf8(newContent),
                 sha: sha
             });
 
