@@ -6,6 +6,8 @@ import { GitHubClient } from './utils/github';
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const OPEN_DB_BASE_URL = "https://raw.githubusercontent.com/Solfood/bluray-database/main";
+const LOOKUP_CACHE_KEY = "bluray_lookup_cache_v1";
+const LOOKUP_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
 const TITLE_NOISE_WORDS = new Set([
   '4k', 'uhd', 'ultra', 'hd', 'blu', 'ray', 'bluray', 'dvd', 'digital', 'code', 'edition',
   'steelbook', 'limited', 'collectors', 'collector', 'special', 'remastered', 'region', 'disc',
@@ -136,6 +138,8 @@ function App() {
   const [userNote, setUserNote] = useState("");
 
   const openDbIndexesRef = useRef({ loaded: false, upc: null, title: null });
+  const lookupCacheRef = useRef(new Map());
+  const activeSearchRef = useRef(0);
 
   useEffect(() => {
     if (keys.github) {
@@ -144,6 +148,20 @@ function App() {
       loadPublicMovies();
     }
   }, [keys.github]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LOOKUP_CACHE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return;
+      const now = Date.now();
+      const valid = parsed.filter(([, value]) => value?.ts && now - value.ts < LOOKUP_CACHE_TTL_MS);
+      lookupCacheRef.current = new Map(valid);
+    } catch (e) {
+      console.warn("Lookup cache restore failed", e);
+    }
+  }, []);
 
   const fetchWithTimeout = async (url, options = {}, timeoutMs = 7000) => {
     const controller = new AbortController();
@@ -196,6 +214,24 @@ function App() {
     const client = new GitHubClient(keys.github);
     const data = await client.getMovies();
     setMovies(sortMoviesNewestFirst(data.movies));
+  };
+
+  const writeLookupCache = () => {
+    try {
+      localStorage.setItem(LOOKUP_CACHE_KEY, JSON.stringify([...lookupCacheRef.current.entries()].slice(-120)));
+    } catch (e) {
+      console.warn("Lookup cache write failed", e);
+    }
+  };
+
+  const setLookupCacheEntry = (key, value) => {
+    if (!key || !value) return;
+    lookupCacheRef.current.set(key, { ...value, ts: Date.now() });
+    if (lookupCacheRef.current.size > 120) {
+      const first = lookupCacheRef.current.keys().next().value;
+      lookupCacheRef.current.delete(first);
+    }
+    writeLookupCache();
   };
 
   const loadOpenDbIndexes = async () => {
@@ -294,6 +330,27 @@ function App() {
     return rankTmdbResults(merged, preferredTitle || queries[0], preferredYear);
   };
 
+  const lookupTmdbByUpc = async (upcRaw) => {
+    if (!keys.tmdb) return [];
+    const upcs = buildUpcCandidates(upcRaw);
+    if (!upcs.length) return [];
+
+    const responses = await Promise.all(
+      upcs.slice(0, 2).map((upc) =>
+        fetchJsonWithRetry(
+          `${TMDB_BASE_URL}/find/${upc}?api_key=${keys.tmdb}&external_source=upc`,
+          {},
+          1,
+          450,
+          4000
+        ).catch(() => null)
+      )
+    );
+
+    const merged = responses.flatMap((r) => r?.movie_results || []);
+    return merged;
+  };
+
   const rankTmdbResults = (results, preferredTitle = '', preferredYear = null) => {
     const unique = [];
     const seen = new Set();
@@ -364,6 +421,17 @@ function App() {
       return;
     }
 
+    const searchId = Date.now();
+    activeSearchRef.current = searchId;
+
+    const cached = lookupCacheRef.current.get(normalizedQuery);
+    if (cached && Date.now() - cached.ts < LOOKUP_CACHE_TTL_MS) {
+      setLoading(false);
+      setStatusMsg("Loaded instantly from recent scan.");
+      chooseCandidates(cached.candidates || [], cached.detectedEdition || '');
+      return;
+    }
+
     setLoading(true);
     setStatusMsg('Searching...');
     setMovieData(null);
@@ -376,31 +444,19 @@ function App() {
       let preferredTitle = '';
       let preferredYear = null;
       let tmdbResults = [];
+      let openDbRecord = null;
 
       if (isBarcode && keys.tmdb) {
         setStatusMsg(`Analyzing barcode: ${normalizedQuery}...`);
-
-        for (const upc of buildUpcCandidates(normalizedQuery)) {
-          try {
-            const findData = await fetchJsonWithRetry(
-              `${TMDB_BASE_URL}/find/${upc}?api_key=${keys.tmdb}&external_source=upc`,
-              {},
-              1,
-              500,
-              6000
-            );
-            if (findData?.movie_results?.length) {
-              tmdbResults = findData.movie_results;
-              break;
-            }
-          } catch (e) {
-            console.warn('TMDB UPC find failed', e);
-          }
-        }
+        const [tmdbDirect, openDbDirect] = await Promise.all([
+          lookupTmdbByUpc(normalizedQuery),
+          lookupOpenDbByUpc(normalizedQuery),
+        ]);
+        tmdbResults = tmdbDirect || [];
+        openDbRecord = openDbDirect || null;
       }
 
-      let openDbRecord = null;
-      if (isBarcode && tmdbResults.length === 0) {
+      if (isBarcode && !openDbRecord && tmdbResults.length === 0) {
         setStatusMsg('Checking Open Database...');
         openDbRecord = await lookupOpenDbByUpc(normalizedQuery);
 
@@ -443,6 +499,13 @@ function App() {
 
         if (merged.length > 0) {
           chooseCandidates(merged, detectedEdition);
+          if (activeSearchRef.current === searchId) {
+            setLookupCacheEntry(normalizedQuery, {
+              candidates: merged,
+              movieData: merged.length === 1 ? merged[0] : null,
+              detectedEdition,
+            });
+          }
         } else {
           chooseCandidates([{
             id: null,
@@ -465,6 +528,13 @@ function App() {
       if (ranked.length > 0) {
         setStatusMsg('Matches found.');
         chooseCandidates(ranked, detectedEdition);
+        if (activeSearchRef.current === searchId) {
+          setLookupCacheEntry(normalizedQuery, {
+            candidates: ranked,
+            movieData: ranked.length === 1 ? ranked[0] : null,
+            detectedEdition,
+          });
+        }
       } else if (openDbRecord) {
         const fallback = {
           id: null,
@@ -476,6 +546,9 @@ function App() {
           _score: 70
         };
         chooseCandidates([fallback], detectedEdition);
+        if (activeSearchRef.current === searchId) {
+          setLookupCacheEntry(normalizedQuery, { candidates: [fallback], movieData: fallback, detectedEdition });
+        }
       } else if (keys.tmdb) {
         setStatusMsg('Trying global UPC lookup...');
         let upcFallback = null;
@@ -496,8 +569,15 @@ function App() {
           if (fallbackRanked.length > 0) {
             setStatusMsg('Matches found via UPC lookup.');
             chooseCandidates(fallbackRanked, detectedEdition);
+            if (activeSearchRef.current === searchId) {
+              setLookupCacheEntry(normalizedQuery, {
+                candidates: fallbackRanked,
+                movieData: fallbackRanked.length === 1 ? fallbackRanked[0] : null,
+                detectedEdition,
+              });
+            }
           } else {
-            chooseCandidates([{
+            const fallbackManual = {
               id: null,
               title: upcFallback.cleanTitle,
               release_date: '',
@@ -505,7 +585,11 @@ function App() {
               note: upcFallback.rawTitle,
               _source: 'upcitemdb',
               _score: 55
-            }], detectedEdition);
+            };
+            chooseCandidates([fallbackManual], detectedEdition);
+            if (activeSearchRef.current === searchId) {
+              setLookupCacheEntry(normalizedQuery, { candidates: [fallbackManual], movieData: fallbackManual, detectedEdition });
+            }
           }
         } else {
           setStatusMsg('Barcode not found. Try title search or manual entry.');
