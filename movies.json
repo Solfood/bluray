@@ -9,7 +9,16 @@
       "upc": "715515116916",
       "added_at": "2026-02-02T01:22:23.192Z",
       "note": "Scanners [Criterion Collection] [2 Discs] [Blu-ray/DVD] [1981]",
-      "status": "failed_enrichment"
+      "status": "enriched",
+      "runtime": 103,
+      "production_countries": [
+        "CA"
+      ],
+      "audio_tracks": [
+        "English"
+      ],
+      "overview": "After a man with extraordinary, and frighteningly destructive, telepathic abilities is nabbed by agents from a mysterious rogue corporation, he discovers he is far from the only possessor of such strange powers. Some of the other \u201cscanners\u201d have their minds set on world domination, while others are trying to stop them.",
+      "enriched_at": "2026-02-22T03:29:33.130457"
     },
     {
       "id": 511809,
@@ -28,7 +37,8 @@
         "Spanish",
         "English"
       ],
-      "enriched_at": "2026-02-03T06:45:56.991184"
+      "enriched_at": "2026-02-22T03:29:33.250855",
+      "overview": "Two youngsters from rival New York City gangs fall in love, but tensions between their respective friends build toward tragedy."
     },
     {
       "id": 458423,
@@ -47,7 +57,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-03T06:45:57.082705"
+      "enriched_at": "2026-02-22T03:29:33.371084",
+      "overview": "Five years after meeting her three fathers, Sophie Sheridan prepares to open her mother\u2019s hotel. In 1979, young Donna Sheridan meets the men who each could be Sophie\u2019s biological father."
     },
     {
       "id": 324857,
@@ -67,7 +78,8 @@
         "Japanese",
         "Spanish"
       ],
-      "enriched_at": "2026-02-03T06:45:57.219261"
+      "enriched_at": "2026-02-22T03:29:33.495694",
+      "overview": "Struggling to find his place in the world while juggling school and family, Brooklyn teenager Miles Morales is unexpectedly bitten by a radioactive spider and develops unfathomable powers just like the one and only Spider-Man. While wrestling with the implications of his new abilities, Miles discovers a super collider created by the madman Wilson \"Kingpin\" Fisk, causing others from across the Spider-Verse to be inadvertently transported to his dimension."
     },
     {
       "id": 281957,
@@ -89,7 +101,8 @@
         "English",
         "French"
       ],
-      "enriched_at": "2026-02-03T06:45:57.312577"
+      "enriched_at": "2026-02-22T03:29:33.617828",
+      "overview": "In the 1820s, a frontiersman, Hugh Glass, sets out on a path of vengeance against those who left him for dead after a bear mauling."
     },
     {
       "id": 12184,
@@ -108,7 +121,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-03T06:45:57.410800"
+      "enriched_at": "2026-02-22T03:29:33.750887",
+      "overview": "A sumptuous and sensual tale of intrigue, romance and betrayal set against the backdrop of a defining moment in European history: two beautiful sisters, Anne and Mary Boleyn, driven by their family's blind ambition, compete for the love of the handsome and passionate King Henry VIII."
     },
     {
       "id": 23047,
@@ -127,7 +141,8 @@
         "Latin",
         "English"
       ],
-      "enriched_at": "2026-02-03T07:06:46.627941"
+      "enriched_at": "2026-02-22T03:29:33.867395",
+      "overview": "A 14th century Crusader returns with his comrade to a homeland devastated by the Black Plague. The Church commands the two knights to transport a witch to a remote abbey, where monks will perform a ritual in hopes of ending the pestilence."
     },
     {
       "id": 2671,
@@ -145,7 +160,8 @@
       "audio_tracks": [
         "Japanese"
       ],
-      "enriched_at": "2026-02-12T02:49:32.193669"
+      "enriched_at": "2026-02-22T03:29:34.021969",
+      "overview": "A mysterious video has been linked to a number of deaths, and when an inquisitive journalist finds the tape and views it herself, she sets in motion a chain of events that puts her own life in danger."
     },
     {
       "id": 1233413,
@@ -165,7 +181,8 @@
         "English",
         "Yoruba"
       ],
-      "enriched_at": "2026-02-19T22:06:51.898008"
+      "enriched_at": "2026-02-22T03:29:34.143587",
+      "overview": "Trying to leave their troubled lives behind, twin brothers return to their hometown to start again, only to discover that an even greater evil is waiting to welcome them back."
     },
     {
       "id": 24922,
@@ -186,7 +203,8 @@
         "Zulu",
         "English"
       ],
-      "enriched_at": "2026-02-19T22:08:19.652248"
+      "enriched_at": "2026-02-22T03:29:34.258379",
+      "overview": "A violent fugitive on the run from the law makes his way from Hong Kong to South Africa, where he discovers that he's immune to the Ebola virus, and later returns home to spread the deadly disease."
     },
     {
       "id": 36647,
@@ -205,7 +223,8 @@
         "Russian",
         "English"
       ],
-      "enriched_at": "2026-02-19T22:10:38.762887"
+      "enriched_at": "2026-02-22T03:29:34.379430",
+      "overview": "The Daywalker known as \"Blade\" - a half-vampire, half-mortal man - becomes the protector of humanity against an underground army of vampires."
     },
     {
       "id": 68726,
@@ -226,7 +245,8 @@
         "Japanese",
         "Russian"
       ],
-      "enriched_at": "2026-02-19T22:12:51.914642"
+      "enriched_at": "2026-02-22T03:29:34.502723",
+      "overview": "Using massive piloted robots to combat the alien threat, earth's survivors take the fight to the invading alien force lurking in the depths of the Pacific Ocean. Nearly defenseless in the face of the relentless enemy, the forces of mankind have no choice but to turn to two unlikely heroes who now stand as earth's final hope against the mounting apocalypse."
     },
     {
       "id": 68737,
@@ -247,7 +267,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:13:29.101561"
+      "enriched_at": "2026-02-22T03:29:34.623602",
+      "overview": "John Gregory, who is a seventh son of a seventh son and also the local spook, has protected the country from witches, boggarts, ghouls and all manner of things that go bump in the night. However John is not young anymore, and has been seeking an apprentice to carry on his trade. Most have failed to survive. The last hope is a young farmer's son named Thomas Ward. Will he survive the training to become the spook that so many others couldn't?"
     },
     {
       "id": 60540,
@@ -265,7 +286,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:14:13.656751"
+      "enriched_at": "2026-02-22T03:29:34.740359",
+      "overview": "Fish has spent six years in jail. Six years alone. Six years keeping his mouth shut about the robbery, about the other men involved. The night he is released, the four men he protected with silence celebrate his freedom with a congratulatory dinner. The meal is a lavish array of sushi, served off the naked body of a beautiful young woman. The sushi girl seems catatonic, trained to ignore everything in the room, even if things become dangerous. Sure enough, the four unwieldy thieves can't help but open old wounds in an attempt to find their missing loot."
     },
     {
       "id": 12244,
@@ -287,7 +309,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:17:21.931769"
+      "enriched_at": "2026-02-22T03:29:34.859931",
+      "overview": "When 9 first comes to life, he finds himself in a post-apocalyptic world. All humans are gone, and it is only by chance that he discovers a small community of others like him taking refuge from fearsome machines that roam the earth intent on their extinction. Despite being the neophyte of the group, 9 convinces the others that hiding will do them no good."
     },
     {
       "id": 13509,
@@ -307,7 +330,8 @@
         "English",
         "Portuguese"
       ],
-      "enriched_at": "2026-02-19T22:18:14.436944"
+      "enriched_at": "2026-02-22T03:29:35.013090",
+      "overview": "Count Dracula returns to the world of humans accompanied by Frankenstein's Monster, the Wolfman, the Mummy, and the Gillman. The uglies are in search of a powerful amulet that will grant them the ability to rule the world. A group of horror-loving heroes are the only ones daring to stand in their way."
     },
     {
       "id": 872585,
@@ -327,7 +351,8 @@
         "Dutch",
         "English"
       ],
-      "enriched_at": "2026-02-19T22:19:18.242450"
+      "enriched_at": "2026-02-22T03:29:35.131701",
+      "overview": "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II."
     },
     {
       "id": 122,
@@ -346,7 +371,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:21:25.576360"
+      "enriched_at": "2026-02-22T03:29:35.251140",
+      "overview": "As armies mass for a final battle that will decide the fate of the world--and powerful, ancient forces of Light and Dark compete to determine the outcome--one member of the Fellowship of the Ring is revealed as the noble heir to the throne of the Kings of Men. Yet, the sole hope for triumph over evil lies with a brave hobbit, Frodo, who, accompanied by his loyal friend Sam and the hideous, wretched Gollum, ventures deep into the very dark heart of Mordor on his seemingly impossible quest to destroy the Ring of Power.\u200b"
     },
     {
       "id": 857,
@@ -367,7 +393,8 @@
         "English",
         "French"
       ],
-      "enriched_at": "2026-02-19T22:22:38.421279"
+      "enriched_at": "2026-02-22T03:29:35.373020",
+      "overview": "As U.S. troops storm the beaches of Normandy, three brothers lie dead on the battlefield, with a fourth trapped behind enemy lines. Ranger captain John Miller and seven men are tasked with penetrating German-held territory and bringing the boy home."
     },
     {
       "id": 1422,
@@ -387,7 +414,8 @@
         "English",
         "Cantonese"
       ],
-      "enriched_at": "2026-02-19T22:23:29.570175"
+      "enriched_at": "2026-02-22T03:29:35.490643",
+      "overview": "To take down South Boston's Irish Mafia, the police send in one of their own to infiltrate the underworld, not realizing the syndicate has done likewise. While an undercover cop curries favor with the mob kingpin, a career criminal rises through the police ranks. But both sides soon discover there's a mole among them."
     },
     {
       "id": 2493,
@@ -405,7 +433,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:33:36.044454"
+      "enriched_at": "2026-02-22T03:29:35.605722",
+      "overview": "In this enchantingly cracked fairy tale, the beautiful Princess Buttercup and the dashing Westley must overcome staggering odds to find happiness amid six-fingered swordsmen, murderous princes, Sicilians and rodents of unusual size. But even death can't stop these true lovebirds from triumphing."
     },
     {
       "id": 58595,
@@ -423,7 +452,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:35:13.745197"
+      "enriched_at": "2026-02-22T03:29:35.730913",
+      "overview": "After the Evil Queen marries the King, she performs a violent coup in which the King is murdered and his daughter, Snow White, is taken captive. Almost a decade later, a grown Snow White is still in the clutches of the Queen. In order to obtain immortality, The Evil Queen needs the heart of Snow White. After Snow escapes the castle, the Queen sends the Huntsman to find her in the Dark Forest."
     },
     {
       "id": 10528,
@@ -444,7 +474,8 @@
         "English",
         "French"
       ],
-      "enriched_at": "2026-02-19T22:35:13.852487"
+      "enriched_at": "2026-02-22T03:29:35.854948",
+      "overview": "Eccentric consulting detective Sherlock Holmes and Doctor John Watson battle to bring down a new nemesis and unravel a deadly plot that could destroy England."
     },
     {
       "id": 348350,
@@ -462,7 +493,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:35:13.983694"
+      "enriched_at": "2026-02-22T03:29:35.985691",
+      "overview": "Through a series of daring escapades deep within a dark and dangerous criminal underworld, Han Solo meets his mighty future copilot Chewbacca and encounters the notorious gambler Lando Calrissian."
     },
     {
       "id": 78,
@@ -486,7 +518,8 @@
         "Japanese",
         "Hungarian"
       ],
-      "enriched_at": "2026-02-19T22:36:52.960667"
+      "enriched_at": "2026-02-22T03:29:36.125047",
+      "overview": "In the smog-choked dystopian Los Angeles of 2019, blade runner Rick Deckard is called out of retirement to terminate a quartet of replicants who have escaped to Earth seeking their creator for a way to extend their short life spans."
     },
     {
       "id": 8413,
@@ -506,7 +539,8 @@
         "English",
         "Latin"
       ],
-      "enriched_at": "2026-02-19T22:38:16.832317"
+      "enriched_at": "2026-02-22T03:29:36.251635",
+      "overview": "In 2047, a group of astronauts are sent to investigate and salvage the starship Event Horizon which disappeared mysteriously seven years before on its maiden voyage. However, it soon becomes evident that something sinister resides in its corridors."
     },
     {
       "id": 5548,
@@ -524,7 +558,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:39:19.993719"
+      "enriched_at": "2026-02-22T03:29:36.366919",
+      "overview": "In a violent, near-apocalyptic Detroit, evil corporation Omni Consumer Products wins a contract from the city government to privatize the police force. To test their crime-eradicating cyborgs, the company leads street cop Alex Murphy into an armed confrontation with crime lord Boddicker so they can use his body to support their untested RoboCop prototype. But when RoboCop learns of the company's nefarious plans, he turns on his masters."
     },
     {
       "id": 228150,
@@ -544,7 +579,8 @@
         "German",
         "Spanish"
       ],
-      "enriched_at": "2026-02-19T22:42:30.390510"
+      "enriched_at": "2026-02-22T03:29:36.491368",
+      "overview": "April, 1945. As the Allies make their final push in the European Theatre, a battle-hardened army sergeant named Wardaddy commands a Sherman tank and her five-man crew on a deadly mission behind enemy lines. Outnumbered and outgunned, and with a rookie soldier thrust into their platoon, Wardaddy and his men face overwhelming odds in their heroic attempts to strike at the heart of Nazi Germany."
     },
     {
       "id": 6977,
@@ -563,7 +599,8 @@
         "English",
         "Spanish"
       ],
-      "enriched_at": "2026-02-19T22:42:30.472447"
+      "enriched_at": "2026-02-22T03:29:36.610944",
+      "overview": "Llewelyn Moss stumbles upon dead bodies, $2 million and a hoard of heroin in a Texas desert, but methodical killer Anton Chigurh comes looking for it, with local sheriff Ed Tom Bell hot on his trail. The roles of prey and predator blur as the violent pursuit of money and justice collide."
     },
     {
       "id": 1271,
@@ -581,7 +618,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:42:30.556589"
+      "enriched_at": "2026-02-22T03:29:36.730216",
+      "overview": "Based on Frank Miller's graphic novel, \"300\" is very loosely based the 480 B.C. Battle of Thermopylae, where the King of Sparta led his army against the advancing Persians; the battle is said to have inspired all of Greece to band together against the Persians, and helped usher in the world's first democracy."
     },
     {
       "id": 27581,
@@ -599,7 +637,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:43:20.178280"
+      "enriched_at": "2026-02-22T03:29:36.849127",
+      "overview": "Unlike their heroic counterparts on the force, desk-bound NYPD detectives Gamble and Hoitz garner no headlines as they work day to day. When a seemingly minor case turns out to be a big deal, the two cops get the opportunity to finally prove to their comrades that they have the right stuff."
     },
     {
       "id": 550,
@@ -618,7 +657,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:43:54.739252"
+      "enriched_at": "2026-02-22T03:29:36.968985",
+      "overview": "A ticking-time-bomb insomniac and a slippery soap salesman channel primal male aggression into a shocking new form of therapy. Their concept catches on, with underground \"fight clubs\" forming in every town, until an eccentric gets in the way and ignites an out-of-control spiral toward oblivion."
     },
     {
       "id": 9476,
@@ -636,7 +676,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:44:48.700570"
+      "enriched_at": "2026-02-22T03:29:37.088824",
+      "overview": "William Thatcher, a knight's peasant apprentice, gets a chance at glory when the knight dies suddenly mid-tournament. Posing as a knight himself, William won't stop until he's crowned tournament champion\u2014assuming matters of the heart don't get in the way."
     },
     {
       "id": 27579,
@@ -656,7 +697,8 @@
         "English",
         "Italian"
       ],
-      "enriched_at": "2026-02-19T22:46:11.759513"
+      "enriched_at": "2026-02-22T03:29:37.208742",
+      "overview": "Dispatched to a small Italian town to await further orders, assassin Jack embarks on a double life that may be more relaxing than is good for him."
     },
     {
       "id": 18,
@@ -676,7 +718,8 @@
         "Swedish",
         "German"
       ],
-      "enriched_at": "2026-02-19T22:46:11.834751"
+      "enriched_at": "2026-02-22T03:29:37.352560",
+      "overview": "In 2257, a taxi driver is unintentionally given the task of saving a young girl who is part of the key that will ensure the survival of humanity."
     },
     {
       "id": 275,
@@ -695,7 +738,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-19T22:46:39.943350"
+      "enriched_at": "2026-02-22T03:29:37.467541",
+      "overview": "Jerry, a small-town Minnesota car salesman is bursting at the seams with debt... but he's got a plan. He's going to hire two thugs to kidnap his wife in a scheme to collect a hefty ransom from his wealthy father-in-law. It's going to be a snap and nobody's going to get hurt... until people start dying. Enter Police Chief Marge, a coffee-drinking, parka-wearing - and extremely pregnant - investigator who'll stop at nothing to get her man. And if you think her small-time investigative skills will give the crooks a run for their ransom... you betcha!"
     },
     {
       "id": 107,
@@ -714,7 +758,8 @@
         "English",
         "Russian"
       ],
-      "enriched_at": "2026-02-19T22:47:24.299675"
+      "enriched_at": "2026-02-22T03:29:37.585863",
+      "overview": "Unscrupulous boxing promoters, violent bookies, a Russian gangster, incompetent amateur robbers, and supposedly Jewish jewellers fight to track down a priceless stolen diamond."
     },
     {
       "id": 713704,
@@ -737,7 +782,8 @@
       "audio_tracks": [
         "English"
       ],
-      "enriched_at": "2026-02-22T03:21:49.392560"
+      "enriched_at": "2026-02-22T03:29:37.699030",
+      "overview": "A reunion between two estranged sisters gets cut short by the rise of flesh-possessing demons, thrusting them into a primal battle for survival as they face the most nightmarish version of family imaginable."
     }
   ]
 }
