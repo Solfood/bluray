@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-22T03:21:37.439Z",
+  "updated_at": "2026-02-22T03:29:22.787Z",
   "movies": [
     {
       "id": 9538,
@@ -715,19 +715,6 @@
         "Russian"
       ],
       "enriched_at": "2026-02-19T22:47:24.299675"
-    },
-    {
-      "id": "manual-1771729970257",
-      "tmdb_id": null,
-      "title": "Arrow Video",
-      "poster_path": null,
-      "release_date": "",
-      "upc": "760137185550",
-      "added_at": "2026-02-22T03:12:50.257Z",
-      "note": "Arrow Video - Evil Dead Rise [ULTRA HD]",
-      "status": "needs_tmdb_match",
-      "match_source": "upcitemdb",
-      "match_score": 55
     },
     {
       "id": 713704,
