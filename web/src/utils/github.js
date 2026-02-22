@@ -6,6 +6,14 @@ const DB_PATH = "movies.json";
 // For now, let's assume the user forks this or uses it in a repo named 'bluray'.
 const REPO_NAME = "bluray";
 
+const movieMatches = (a, b) => {
+    if (!a || !b) return false;
+    if (a.added_at && b.added_at && a.added_at === b.added_at) return true;
+    if (a.upc && b.upc && a.upc === b.upc && a.title === b.title) return true;
+    if (a.id != null && b.id != null && a.id === b.id && a.title === b.title) return true;
+    return false;
+};
+
 export class GitHubClient {
     constructor(token) {
         this.octokit = new Octokit({ auth: token });
@@ -88,6 +96,43 @@ export class GitHubClient {
                 console.warn(`SHA Mismatch (Race Condition), retrying... attempts left: ${retries}`);
                 await new Promise(r => setTimeout(r, 1000)); // Wait a sec for the other scanner/bot to finish
                 return this.addMovie(movie, retries - 1);
+            }
+            throw error;
+        }
+    }
+
+    async deleteMovie(movie, retries = 3) {
+        if (!this.owner) await this.login();
+
+        try {
+            const { movies, sha } = await this.getMovies();
+            const nextMovies = movies.filter((m) => !movieMatches(m, movie));
+
+            if (nextMovies.length === movies.length) {
+                console.warn("Delete skipped: movie not found in DB.");
+                return movies;
+            }
+
+            const newContent = JSON.stringify({
+                updated_at: new Date().toISOString(),
+                movies: nextMovies
+            }, null, 2);
+
+            await this.octokit.rest.repos.createOrUpdateFileContents({
+                owner: this.owner,
+                repo: REPO_NAME,
+                path: DB_PATH,
+                message: `Remove movie: ${movie.title || movie.id || "unknown"}`,
+                content: btoa(newContent),
+                sha: sha
+            });
+
+            return nextMovies;
+        } catch (error) {
+            if (retries > 0 && (error.status === 409 || error.status === 422)) {
+                console.warn(`Delete conflict, retrying... attempts left: ${retries}`);
+                await new Promise((r) => setTimeout(r, 1000));
+                return this.deleteMovie(movie, retries - 1);
             }
             throw error;
         }

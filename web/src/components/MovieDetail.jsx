@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-function MovieDetail({ movie, onClose }) {
+function MovieDetail({ movie, onClose, onDelete, canDelete = false }) {
     if (!movie) return null;
 
     // Prevent body scroll when modal is open
@@ -36,11 +36,17 @@ function MovieDetail({ movie, onClose }) {
 
                 {/* Poster Side */}
                 <div className="w-full md:w-1/3 relative h-64 md:h-auto">
-                    <img
-                        src={`https://image.tmdb.org/t/p/w780${movie.poster_path}`}
-                        className="w-full h-full object-cover"
-                        alt={movie.title}
-                    />
+                    {movie.poster_path ? (
+                        <img
+                            src={`https://image.tmdb.org/t/p/w780${movie.poster_path}`}
+                            className="w-full h-full object-cover"
+                            alt={movie.title}
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500 text-sm">
+                            No Poster
+                        </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent md:hidden" />
                 </div>
 
@@ -73,6 +79,15 @@ function MovieDetail({ movie, onClose }) {
                             <p className="font-mono text-gray-300">{movie.upc || 'N/A'}</p>
                         </div>
                     </div>
+
+                    {canDelete && (
+                        <button
+                            onClick={() => onDelete?.(movie)}
+                            className="mt-6 w-full bg-red-700/90 hover:bg-red-700 text-white py-3 rounded-lg font-semibold"
+                        >
+                            Delete From Collection
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

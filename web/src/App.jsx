@@ -77,6 +77,21 @@ const buildUpcCandidates = (rawUpc) => {
   return [...variants];
 };
 
+const sortMoviesNewestFirst = (items) =>
+  [...(items || [])].sort((a, b) => {
+    const aTs = Date.parse(a?.added_at || 0);
+    const bTs = Date.parse(b?.added_at || 0);
+    return (Number.isNaN(bTs) ? 0 : bTs) - (Number.isNaN(aTs) ? 0 : aTs);
+  });
+
+const moviesMatch = (a, b) => {
+  if (!a || !b) return false;
+  if (a.added_at && b.added_at && a.added_at === b.added_at) return true;
+  if (a.upc && b.upc && a.upc === b.upc && a.title === b.title) return true;
+  if (a.id != null && b.id != null && a.id === b.id && a.title === b.title) return true;
+  return false;
+};
+
 const scoreMovieCandidate = (candidate, preferredTitle, preferredYear) => {
   let score = 0;
   const candTitle = normalizeTitle(candidate.title || "");
@@ -162,7 +177,7 @@ function App() {
       const res = await fetchWithTimeout('https://raw.githubusercontent.com/Solfood/bluray/main/movies.json', {}, 9000);
       if (res.ok) {
         const data = await res.json();
-        setMovies(data.movies || []);
+        setMovies(sortMoviesNewestFirst(data.movies || []));
       }
     } catch (e) {
       console.error('Failed to load public movies', e);
@@ -180,7 +195,7 @@ function App() {
     if (!keys.github) return;
     const client = new GitHubClient(keys.github);
     const data = await client.getMovies();
-    setMovies(data.movies);
+    setMovies(sortMoviesNewestFirst(data.movies));
   };
 
   const loadOpenDbIndexes = async () => {
@@ -532,8 +547,8 @@ function App() {
 
       // Optimistic UI update so save feels instant in app even before GitHub round-trip completes.
       setMovies((prev) => {
-        if (prev.some((m) => m.upc === newMovie.upc && m.title === newMovie.title)) return prev;
-        return [...prev, newMovie];
+        if (prev.some((m) => moviesMatch(m, newMovie))) return prev;
+        return sortMoviesNewestFirst([newMovie, ...prev]);
       });
       setView('home');
       setMovieData(null);
@@ -549,6 +564,23 @@ function App() {
       loadMovies();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteMovie = async (movieToDelete) => {
+    if (!movieToDelete || !keys.github) return;
+
+    const previous = [...movies];
+    setSelectedMovie(null);
+    setMovies((prev) => prev.filter((m) => !moviesMatch(m, movieToDelete)));
+
+    try {
+      const client = new GitHubClient(keys.github);
+      await client.deleteMovie(movieToDelete);
+      loadMovies();
+    } catch (e) {
+      alert(`Failed to delete: ${e.message}`);
+      setMovies(previous);
     }
   };
 
@@ -729,6 +761,8 @@ function App() {
         <MovieDetail
           movie={selectedMovie}
           onClose={() => setSelectedMovie(null)}
+          onDelete={handleDeleteMovie}
+          canDelete={Boolean(keys.github)}
         />
       )}
     </div>
