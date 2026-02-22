@@ -4,10 +4,11 @@ on:
   push:
     paths:
       - 'movies.json'
+  workflow_dispatch:
 
 concurrency:
   group: enrichment-lock
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   enrich:
@@ -16,12 +17,14 @@ jobs:
       contents: write
       
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
           
       - name: Install dependencies
         run: |
@@ -31,17 +34,23 @@ jobs:
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
         run: python details_scraper.py
-        
-      - name: Commit changes
-        run: |
+
       - name: Commit changes
         run: |
           git config --global user.name 'BlurayBot'
           git config --global user.email 'bot@noreply.github.com'
           git add movies.json
           # Only proceed if there are changes
-          if ! git diff --quiet || ! git diff --staged --quiet; then
+          if git diff --staged --quiet; then
+            echo "No enrichment changes to commit."
+          else
             git commit -m "Auto-enrich movie details"
-            git pull --rebase origin main
-            git push
+            for i in 1 2 3; do
+              git pull --rebase origin main && git push && break
+              if [ $i -eq 3 ]; then
+                echo "Push failed after retries."
+                exit 1
+              fi
+              sleep 2
+            done
           fi
