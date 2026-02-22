@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-22T04:19:14.940Z",
+  "updated_at": "2026-02-22T04:35:03.148Z",
   "movies": [
     {
       "id": 9538,
@@ -17,7 +17,7 @@
       "audio_tracks": [
         "English"
       ],
-      "overview": "After a man with extraordinary, and frighteningly destructive, telepathic abilities is nabbed by agents from a mysterious rogue corporation, he discovers he is far from the only possessor of such strange powers. Some of the other \u201cscanners\u201d have their minds set on world domination, while others are trying to stop them.",
+      "overview": "After a man with extraordinary, and frighteningly destructive, telepathic abilities is nabbed by agents from a mysterious rogue corporation, he discovers he is far from the only possessor of such strange powers. Some of the other “scanners” have their minds set on world domination, while others are trying to stop them.",
       "enriched_at": "2026-02-22T03:29:33.130457"
     },
     {
@@ -58,7 +58,7 @@
         "English"
       ],
       "enriched_at": "2026-02-22T03:29:33.371084",
-      "overview": "Five years after meeting her three fathers, Sophie Sheridan prepares to open her mother\u2019s hotel. In 1979, young Donna Sheridan meets the men who each could be Sophie\u2019s biological father."
+      "overview": "Five years after meeting her three fathers, Sophie Sheridan prepares to open her mother’s hotel. In 1979, young Donna Sheridan meets the men who each could be Sophie’s biological father."
     },
     {
       "id": 324857,
@@ -372,7 +372,7 @@
         "English"
       ],
       "enriched_at": "2026-02-22T03:29:35.251140",
-      "overview": "As armies mass for a final battle that will decide the fate of the world--and powerful, ancient forces of Light and Dark compete to determine the outcome--one member of the Fellowship of the Ring is revealed as the noble heir to the throne of the Kings of Men. Yet, the sole hope for triumph over evil lies with a brave hobbit, Frodo, who, accompanied by his loyal friend Sam and the hideous, wretched Gollum, ventures deep into the very dark heart of Mordor on his seemingly impossible quest to destroy the Ring of Power.\u200b"
+      "overview": "As armies mass for a final battle that will decide the fate of the world--and powerful, ancient forces of Light and Dark compete to determine the outcome--one member of the Fellowship of the Ring is revealed as the noble heir to the throne of the Kings of Men. Yet, the sole hope for triumph over evil lies with a brave hobbit, Frodo, who, accompanied by his loyal friend Sam and the hideous, wretched Gollum, ventures deep into the very dark heart of Mordor on his seemingly impossible quest to destroy the Ring of Power.​"
     },
     {
       "id": 857,
@@ -677,7 +677,7 @@
         "English"
       ],
       "enriched_at": "2026-02-22T03:29:37.088824",
-      "overview": "William Thatcher, a knight's peasant apprentice, gets a chance at glory when the knight dies suddenly mid-tournament. Posing as a knight himself, William won't stop until he's crowned tournament champion\u2014assuming matters of the heart don't get in the way."
+      "overview": "William Thatcher, a knight's peasant apprentice, gets a chance at glory when the knight dies suddenly mid-tournament. Posing as a knight himself, William won't stop until he's crowned tournament champion—assuming matters of the heart don't get in the way."
     },
     {
       "id": 27579,
@@ -784,6 +784,20 @@
         "English"
       ],
       "enriched_at": "2026-02-22T04:19:26.102393"
+    },
+    {
+      "id": 492565,
+      "tmdb_id": 492565,
+      "title": "The Kid",
+      "poster_path": "/62kTr2OP9itiyboPCpbhdvty9eV.jpg",
+      "release_date": "2019-03-08",
+      "overview": "New Mexico Territory, 1880. Rio Cutler and his older sister Sara must abandon their home after an unfortunate event happens. In their desperate flee to Santa Fe, they cross paths with the infamous outlaw Billy the Kid and his gang, who are ruthlessly pursued by a posse led by Sheriff Pat Garret.",
+      "upc": "The kid",
+      "added_at": "2026-02-22T04:35:02.673Z",
+      "note": "",
+      "status": "pending_enrichment",
+      "match_source": "tmdb",
+      "match_score": 112
     }
   ]
 }
