@@ -6,6 +6,11 @@ import { GitHubClient } from './utils/github';
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const OPEN_DB_BASE_URL = "https://raw.githubusercontent.com/Solfood/bluray-database/main";
+const TITLE_NOISE_WORDS = new Set([
+  '4k', 'uhd', 'ultra', 'hd', 'blu', 'ray', 'bluray', 'dvd', 'digital', 'code', 'edition',
+  'steelbook', 'limited', 'collectors', 'collector', 'special', 'remastered', 'region', 'disc',
+  'discs', 'video', 'arrow', 'criterion'
+]);
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -15,6 +20,38 @@ const normalizeTitle = (value) =>
     .replace(/\(.*?\)|\[.*?\]/g, " ")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+
+const cleanProductTitle = (value) => {
+  const text = (value || '')
+    .replace(/\[[^\]]*]/g, ' ')
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/[|/]/g, ' ')
+    .replace(/\b(4k|uhd|ultra\s*hd|blu[\s-]?ray|dvd|digital\s*code|steelbook|limited\s*edition|collector'?s?\s*edition|arrow\s*video|criterion)\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return text || (value || '').trim();
+};
+
+const buildTitleVariants = (value) => {
+  const raw = (value || '').trim();
+  if (!raw) return [];
+
+  const variants = new Set();
+  variants.add(cleanProductTitle(raw));
+  variants.add(raw.split(/[:\-|]/)[0].trim());
+  variants.add(raw.split(/[\[(]/)[0].trim());
+
+  const cleanedWords = cleanProductTitle(raw)
+    .split(/\s+/)
+    .filter((w) => w && !TITLE_NOISE_WORDS.has(w.toLowerCase()));
+  if (cleanedWords.length) variants.add(cleanedWords.join(' '));
+
+  return [...variants]
+    .map((v) => v.replace(/\s+/g, ' ').trim())
+    .filter((v) => v.length >= 2)
+    .slice(0, 4);
+};
 
 const safeYear = (value) => {
   if (!value) return null;
@@ -216,8 +253,30 @@ function App() {
     const rawTitle = data?.items?.[0]?.title?.trim();
     if (!rawTitle) return null;
 
-    const cleanTitle = rawTitle.split(/[\[\(\-|:]/)[0].trim() || rawTitle;
-    return { rawTitle, cleanTitle };
+    const titleCandidates = buildTitleVariants(rawTitle);
+    const cleanTitle = titleCandidates[0] || rawTitle;
+    return { rawTitle, cleanTitle, titleCandidates };
+  };
+
+  const searchTmdbByTitleCandidates = async (titles, preferredTitle = '', preferredYear = null) => {
+    if (!keys.tmdb) return [];
+    const queries = [...new Set((titles || []).filter(Boolean))].slice(0, 3);
+    if (queries.length === 0) return [];
+
+    const results = await Promise.all(
+      queries.map((title) =>
+        fetchJsonWithRetry(
+          `${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(title)}`,
+          {},
+          1,
+          400,
+          4500
+        ).catch(() => null)
+      )
+    );
+
+    const merged = results.flatMap((r) => r?.results || []);
+    return rankTmdbResults(merged, preferredTitle || queries[0], preferredYear);
   };
 
   const rankTmdbResults = (results, preferredTitle = '', preferredYear = null) => {
@@ -337,14 +396,12 @@ function App() {
 
           if (keys.tmdb && preferredTitle) {
             setStatusMsg(`Found "${preferredTitle}". Matching TMDB...`);
-            const searchData = await fetchJsonWithRetry(
-              `${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(preferredTitle)}`,
-              {},
-              1,
-              500,
-              6500
+            const rankedFromPreferred = await searchTmdbByTitleCandidates(
+              buildTitleVariants(preferredTitle),
+              preferredTitle,
+              preferredYear
             );
-            tmdbResults = searchData?.results || [];
+            tmdbResults = rankedFromPreferred;
           }
         }
       }
@@ -386,7 +443,9 @@ function App() {
         return;
       }
 
-      const ranked = rankTmdbResults(tmdbResults, preferredTitle, preferredYear);
+      const ranked = Array.isArray(tmdbResults) && tmdbResults[0]?._score !== undefined
+        ? tmdbResults
+        : rankTmdbResults(tmdbResults, preferredTitle, preferredYear);
 
       if (ranked.length > 0) {
         setStatusMsg('Matches found.');
@@ -413,14 +472,11 @@ function App() {
 
         if (upcFallback) {
           detectedEdition = upcFallback.rawTitle;
-          const searchData = await fetchJsonWithRetry(
-            `${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(upcFallback.cleanTitle)}`,
-            {},
-            1,
-            500,
-            6500
+          const fallbackRanked = await searchTmdbByTitleCandidates(
+            upcFallback.titleCandidates || [upcFallback.cleanTitle],
+            upcFallback.cleanTitle,
+            null
           );
-          const fallbackRanked = rankTmdbResults(searchData?.results || [], upcFallback.cleanTitle, null);
 
           if (fallbackRanked.length > 0) {
             setStatusMsg('Matches found via UPC lookup.');
@@ -474,15 +530,23 @@ function App() {
         match_score: movieData._score || null
       };
 
-      await client.addMovie(newMovie);
+      // Optimistic UI update so save feels instant in app even before GitHub round-trip completes.
+      setMovies((prev) => {
+        if (prev.some((m) => m.upc === newMovie.upc && m.title === newMovie.title)) return prev;
+        return [...prev, newMovie];
+      });
       setView('home');
-      loadMovies();
       setMovieData(null);
       setSearchCandidates([]);
       setScannedCode('');
       setStatusMsg('');
+      setLoading(false);
+
+      await client.addMovie(newMovie);
+      loadMovies();
     } catch (e) {
       alert(`Failed to save: ${e.message}`);
+      loadMovies();
     } finally {
       setLoading(false);
     }
