@@ -103,35 +103,51 @@ function App() {
           if (findData.movie_results?.length > 0) data.results = findData.movie_results;
         } catch (e) { console.warn("TMDB UPC Find failed", e); }
 
-        // 2. AllOrigins Proxy -> UPCItemDB
+        // 2. Custom GitHub Database Fallback
         if (!data.results || data.results.length === 0) {
           try {
-            setStatusMsg("Checking Global Barcode Database...");
-            const proxyUrl = `https://api.allorigins.win/raw?url=` + encodeURIComponent(`https://api.upcitemdb.com/prod/trial/lookup?upc=${query}`);
+            setStatusMsg("Checking Open Database...");
+            // Clean up the query
+            let cleanQuery = query.replace(/\D/g, '');
+            if (cleanQuery.length > 0) {
+              if (cleanQuery.length < 3) cleanQuery = cleanQuery.padStart(3, '0');
 
-            // Use Retry Logic here because AllOrigins/UPCDB can be flaky
-            const upcRes = await fetchWithRetry(proxyUrl, {}, 3, 1000);
+              const chunkUrl = `https://raw.githubusercontent.com/Solfood/bluray-database/main/upc/${cleanQuery[0]}/${cleanQuery[1]}/${cleanQuery[2]}/${cleanQuery}.json`;
 
-            if (!upcRes.ok) throw new Error(`UPC API Status: ${upcRes.status}`);
-            const upcData = await upcRes.json();
+              const upcRes = await fetch(chunkUrl);
 
-            if (upcData.items && upcData.items.length > 0) {
-              let rawTitle = upcData.items[0].title;
-              detectedEdition = rawTitle;
-              const cleanTitle = rawTitle.split(/[\[\(]/)[0].trim();
-              setStatusMsg(`Found: "${cleanTitle}". Searching info...`);
+              if (upcRes.ok) {
+                const upcData = await upcRes.json();
 
-              const searchRes = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(cleanTitle)}`);
-              if (!searchRes.ok) throw new Error(`TMDB Search Error: ${searchRes.status}`);
-              const searchData = await searchRes.json();
-              if (searchData.results?.length > 0) data.results = searchData.results;
-            } else {
-              setStatusMsg(`UPC DB returned 0 results.`);
-              await new Promise(r => setTimeout(r, 1500));
+                let rawTitle = upcData.edition || upcData.title;
+                detectedEdition = rawTitle;
+                const cleanTitle = upcData.title.trim();
+
+                setStatusMsg(`Found: "${cleanTitle}". Fetching poster...`);
+
+                // If TMDB ID is available in our db, we could use it, but for now we search by title
+                const searchRes = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(cleanTitle)}`);
+                if (searchRes.ok) {
+                  const searchData = await searchRes.json();
+                  if (searchData.results?.length > 0) {
+                    data.results = searchData.results;
+                  } else {
+                    // Fallback if TMDB search fails but we have DB data
+                    data.results = [{
+                      title: cleanTitle,
+                      overview: "Found in Open Database.",
+                      release_date: upcData.year ? `${upcData.year}-01-01` : ""
+                    }];
+                  }
+                }
+              } else {
+                setStatusMsg(`UPC not found in database.`);
+                await new Promise(r => setTimeout(r, 1500));
+              }
             }
           } catch (err) {
-            console.warn("UPCItemDB failed", err);
-            setStatusMsg(`UPC Lookup Failed: ${err.message}`);
+            console.warn("GitHub DB Fetch failed", err);
+            setStatusMsg(`DB Lookup Failed: ${err.message}`);
             await new Promise(r => setTimeout(r, 1500));
           }
         }
