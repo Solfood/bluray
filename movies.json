@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-22T03:29:22.787Z",
+  "updated_at": "2026-02-22T04:17:07.295Z",
   "movies": [
     {
       "id": 9538,
@@ -17,7 +17,7 @@
       "audio_tracks": [
         "English"
       ],
-      "overview": "After a man with extraordinary, and frighteningly destructive, telepathic abilities is nabbed by agents from a mysterious rogue corporation, he discovers he is far from the only possessor of such strange powers. Some of the other \u201cscanners\u201d have their minds set on world domination, while others are trying to stop them.",
+      "overview": "After a man with extraordinary, and frighteningly destructive, telepathic abilities is nabbed by agents from a mysterious rogue corporation, he discovers he is far from the only possessor of such strange powers. Some of the other “scanners” have their minds set on world domination, while others are trying to stop them.",
       "enriched_at": "2026-02-22T03:29:33.130457"
     },
     {
@@ -58,7 +58,7 @@
         "English"
       ],
       "enriched_at": "2026-02-22T03:29:33.371084",
-      "overview": "Five years after meeting her three fathers, Sophie Sheridan prepares to open her mother\u2019s hotel. In 1979, young Donna Sheridan meets the men who each could be Sophie\u2019s biological father."
+      "overview": "Five years after meeting her three fathers, Sophie Sheridan prepares to open her mother’s hotel. In 1979, young Donna Sheridan meets the men who each could be Sophie’s biological father."
     },
     {
       "id": 324857,
@@ -372,7 +372,7 @@
         "English"
       ],
       "enriched_at": "2026-02-22T03:29:35.251140",
-      "overview": "As armies mass for a final battle that will decide the fate of the world--and powerful, ancient forces of Light and Dark compete to determine the outcome--one member of the Fellowship of the Ring is revealed as the noble heir to the throne of the Kings of Men. Yet, the sole hope for triumph over evil lies with a brave hobbit, Frodo, who, accompanied by his loyal friend Sam and the hideous, wretched Gollum, ventures deep into the very dark heart of Mordor on his seemingly impossible quest to destroy the Ring of Power.\u200b"
+      "overview": "As armies mass for a final battle that will decide the fate of the world--and powerful, ancient forces of Light and Dark compete to determine the outcome--one member of the Fellowship of the Ring is revealed as the noble heir to the throne of the Kings of Men. Yet, the sole hope for triumph over evil lies with a brave hobbit, Frodo, who, accompanied by his loyal friend Sam and the hideous, wretched Gollum, ventures deep into the very dark heart of Mordor on his seemingly impossible quest to destroy the Ring of Power.​"
     },
     {
       "id": 857,
@@ -677,7 +677,7 @@
         "English"
       ],
       "enriched_at": "2026-02-22T03:29:37.088824",
-      "overview": "William Thatcher, a knight's peasant apprentice, gets a chance at glory when the knight dies suddenly mid-tournament. Posing as a knight himself, William won't stop until he's crowned tournament champion\u2014assuming matters of the heart don't get in the way."
+      "overview": "William Thatcher, a knight's peasant apprentice, gets a chance at glory when the knight dies suddenly mid-tournament. Posing as a knight himself, William won't stop until he's crowned tournament champion—assuming matters of the heart don't get in the way."
     },
     {
       "id": 27579,
@@ -760,30 +760,6 @@
       ],
       "enriched_at": "2026-02-22T03:29:37.585863",
       "overview": "Unscrupulous boxing promoters, violent bookies, a Russian gangster, incompetent amateur robbers, and supposedly Jewish jewellers fight to track down a priceless stolen diamond."
-    },
-    {
-      "id": 713704,
-      "tmdb_id": 713704,
-      "title": "Evil Dead Rise",
-      "poster_path": "/5ik4ATKmNtmJU6AYD0bLm56BCVM.jpg",
-      "release_date": "2023-04-12",
-      "upc": "760137185550",
-      "added_at": "2026-02-22T03:21:37.384Z",
-      "note": "Arrow Video - Evil Dead Rise [ULTRA HD]",
-      "status": "enriched",
-      "match_source": "tmdb",
-      "match_score": 118,
-      "runtime": 96,
-      "production_countries": [
-        "IE",
-        "NZ",
-        "US"
-      ],
-      "audio_tracks": [
-        "English"
-      ],
-      "enriched_at": "2026-02-22T03:29:37.699030",
-      "overview": "A reunion between two estranged sisters gets cut short by the rise of flesh-possessing demons, thrusting them into a primal battle for survival as they face the most nightmarish version of family imaginable."
     }
   ]
 }
