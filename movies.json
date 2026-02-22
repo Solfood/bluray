@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-02-22T03:12:50.273Z",
+  "updated_at": "2026-02-22T03:21:37.439Z",
   "movies": [
     {
       "id": 9538,
@@ -728,6 +728,19 @@
       "status": "needs_tmdb_match",
       "match_source": "upcitemdb",
       "match_score": 55
+    },
+    {
+      "id": 713704,
+      "tmdb_id": 713704,
+      "title": "Evil Dead Rise",
+      "poster_path": "/5ik4ATKmNtmJU6AYD0bLm56BCVM.jpg",
+      "release_date": "2023-04-12",
+      "upc": "760137185550",
+      "added_at": "2026-02-22T03:21:37.384Z",
+      "note": "Arrow Video - Evil Dead Rise [ULTRA HD]",
+      "status": "pending_enrichment",
+      "match_source": "tmdb",
+      "match_score": 118
     }
   ]
 }
