@@ -444,6 +444,118 @@ export function useLookup(keys) {
     }
   };
 
+  const compressImageToBase64 = (file, maxPx = 600) =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        const b64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+        resolve(b64);
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+
+  const identifyFromCover = async (imageFile) => {
+    if (!keys.anthropic) {
+      setStatusMsg('Add an Anthropic API key in Settings to use cover identification.');
+      return;
+    }
+
+    setLoading(true);
+    setStatusMsg('Identifying cover...');
+    setMovieData(null);
+    setSearchCandidates([]);
+
+    try {
+      const b64 = await compressImageToBase64(imageFile);
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': keys.anthropic,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 128,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: { type: 'base64', media_type: 'image/jpeg', data: b64 },
+              },
+              {
+                type: 'text',
+                text: 'This is a photo of a Blu-ray or 4K disc cover. Identify the movie. Reply with JSON only, no markdown:\n{"title":"...", "year":null, "edition":""}',
+              },
+            ],
+          }],
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `API error ${response.status}`);
+      }
+
+      const data = await response.json();
+      const raw = data?.content?.[0]?.text?.trim() || '';
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        throw new Error(`Unexpected response: ${raw.slice(0, 80)}`);
+      }
+
+      if (!parsed?.title) {
+        setStatusMsg("Couldn't identify the cover. Try a clearer photo or type the title.");
+        setLoading(false);
+        return;
+      }
+
+      const title = parsed.title.trim();
+      const year = parsed.year ? Number(parsed.year) : null;
+      const edition = (parsed.edition || '').trim();
+
+      setStatusMsg(`Identified: "${title}". Searching...`);
+      setScannedCode(title);
+      if (edition) setUserNote(edition);
+
+      const candidates = await searchTmdbByTitleCandidates(
+        buildTitleVariants(title),
+        title,
+        year
+      );
+
+      if (candidates.length > 0) {
+        chooseCandidates(candidates, edition);
+      } else {
+        chooseCandidates([{
+          id: null,
+          title,
+          release_date: year ? `${year}-01-01` : '',
+          overview: 'Identified from cover photo. No TMDB match found.',
+          note: edition,
+          _source: 'cover-photo',
+          _score: 60,
+        }], edition);
+      }
+    } catch (e) {
+      console.error('Cover identification failed', e);
+      setStatusMsg(`Cover ID failed: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleScan = async (code) => {
     const normalized = normalizeScanOrInput(code);
     setScannedCode(normalized);
@@ -461,6 +573,7 @@ export function useLookup(keys) {
     setUserNote,
     handleScan,
     searchTMDB,
+    identifyFromCover,
     selectMovieCandidate,
     reset,
   };

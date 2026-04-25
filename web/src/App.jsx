@@ -10,7 +10,7 @@ function App() {
   const [view, setView] = useState('home');
   const [keys, setKeys] = useState(() => {
     const saved = localStorage.getItem('bluray_keys');
-    return saved ? JSON.parse(saved) : { tmdb: '', github: '' };
+    return saved ? JSON.parse(saved) : { tmdb: '', github: '', anthropic: '' };
   });
 
   const [movies, setMovies] = useState([]);
@@ -28,6 +28,7 @@ function App() {
     setUserNote,
     handleScan,
     searchTMDB,
+    identifyFromCover,
     selectMovieCandidate,
     reset: resetLookup,
   } = useLookup(keys);
@@ -143,6 +144,10 @@ function App() {
             <label className="block text-sm text-gray-400 mb-2">TMDB API Key</label>
             <input type="password" className="w-full bg-gray-900 p-4 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500" value={keys.tmdb} onChange={(e) => setKeys({ ...keys, tmdb: e.target.value })} />
           </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Anthropic API Key <span className="text-gray-600">(cover photo ID)</span></label>
+            <input type="password" className="w-full bg-gray-900 p-4 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500" value={keys.anthropic || ''} onChange={(e) => setKeys({ ...keys, anthropic: e.target.value })} />
+          </div>
           <div className="flex gap-4 pt-4">
             <button onClick={() => setView('home')} className="flex-1 bg-gray-700 py-3 rounded-xl font-bold">Cancel</button>
             <button onClick={() => saveKeys(keys)} className="flex-1 bg-blue-600 py-3 rounded-xl font-bold shadow-lg shadow-blue-900/40">Save Access</button>
@@ -156,6 +161,8 @@ function App() {
     return (
       <Scanner
         onScan={(code) => { setView('add'); handleScan(code); }}
+        onCoverPhoto={(file) => { setView('add'); identifyFromCover(file); }}
+        canUseCover={Boolean(keys.anthropic)}
         onClose={() => setView('home')}
       />
     );
