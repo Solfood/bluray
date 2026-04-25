@@ -1,9 +1,7 @@
 import { Octokit } from "@octokit/rest";
+import { moviesMatch } from "./movies.js";
 
 const DB_PATH = "movies.json";
-// We need to know who the owner is. We'll fetch it on login.
-// Repo name is assumed 'bluray' based on context, but we might want to make it configurable?
-// For now, let's assume the user forks this or uses it in a repo named 'bluray'.
 const REPO_NAME = "bluray";
 
 const toBase64Utf8 = (value) => {
@@ -22,14 +20,6 @@ const fromBase64Utf8 = (value) => {
         bytes[i] = binary.charCodeAt(i);
     }
     return new TextDecoder().decode(bytes);
-};
-
-const movieMatches = (a, b) => {
-    if (!a || !b) return false;
-    if (a.added_at && b.added_at && a.added_at === b.added_at) return true;
-    if (a.upc && b.upc && a.upc === b.upc && a.title === b.title) return true;
-    if (a.id != null && b.id != null && a.id === b.id && a.title === b.title) return true;
-    return false;
 };
 
 export class GitHubClient {
@@ -124,7 +114,7 @@ export class GitHubClient {
 
         try {
             const { movies, sha } = await this.getMovies();
-            const nextMovies = movies.filter((m) => !movieMatches(m, movie));
+            const nextMovies = movies.filter((m) => !moviesMatch(m, movie));
 
             if (nextMovies.length === movies.length) {
                 console.warn("Delete skipped: movie not found in DB.");

@@ -3,6 +3,7 @@ import Scanner from './components/Scanner';
 import MovieGrid from './components/MovieGrid';
 import MovieDetail from './components/MovieDetail';
 import { GitHubClient } from './utils/github';
+import { moviesMatch } from './utils/movies';
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const OPEN_DB_BASE_URL = "https://raw.githubusercontent.com/Solfood/bluray-database/main";
@@ -85,14 +86,6 @@ const sortMoviesNewestFirst = (items) =>
     const bTs = Date.parse(b?.added_at || 0);
     return (Number.isNaN(bTs) ? 0 : bTs) - (Number.isNaN(aTs) ? 0 : aTs);
   });
-
-const moviesMatch = (a, b) => {
-  if (!a || !b) return false;
-  if (a.added_at && b.added_at && a.added_at === b.added_at) return true;
-  if (a.upc && b.upc && a.upc === b.upc && a.title === b.title) return true;
-  if (a.id != null && b.id != null && a.id === b.id && a.title === b.title) return true;
-  return false;
-};
 
 const scoreMovieCandidate = (candidate, preferredTitle, preferredYear) => {
   let score = 0;
