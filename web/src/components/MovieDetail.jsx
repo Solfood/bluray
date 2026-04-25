@@ -1,9 +1,15 @@
 import React, { useEffect } from 'react';
 
+function formatRuntime(minutes) {
+  if (!minutes) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
 function MovieDetail({ movie, onClose, onDelete, canDelete = false }) {
     if (!movie) return null;
 
-    // Prevent body scroll when modal is open
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => {
@@ -11,13 +17,14 @@ function MovieDetail({ movie, onClose, onDelete, canDelete = false }) {
         };
     }, []);
 
-    const backdropUrl = movie.poster_path
-        ? `https://image.tmdb.org/t/p/w1280${movie.poster_path}` // Using poster as backdrop if actual backdrop missing, but usually we'd have backdrop_path
-        : null;
+    const runtime = formatRuntime(movie.runtime);
+    const genres = Array.isArray(movie.genres) && movie.genres.length > 0 ? movie.genres : null;
+    const audioTracks = Array.isArray(movie.audio_tracks) && movie.audio_tracks.length > 0 ? movie.audio_tracks : null;
+    const countries = Array.isArray(movie.production_countries) && movie.production_countries.length > 0 ? movie.production_countries : null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center sm:p-4">
-            {/* Backdrop Blur Layer */}
+            {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-md"
                 onClick={onClose}
@@ -52,10 +59,15 @@ function MovieDetail({ movie, onClose, onDelete, canDelete = false }) {
 
                 {/* Info Side */}
                 <div className="flex-1 p-6 overflow-y-auto">
-                    <h2 className="text-3xl font-bold text-white mb-2">{movie.title}</h2>
+                    <h2 className="text-3xl font-bold text-white mb-1">{movie.title}</h2>
 
-                    <div className="flex flex-wrap gap-2 mb-4 text-sm text-gray-300">
+                    {movie.tagline && (
+                        <p className="text-gray-500 italic text-sm mb-3">{movie.tagline}</p>
+                    )}
+
+                    <div className="flex flex-wrap gap-2 mb-3 text-sm text-gray-300">
                         <span className="bg-gray-800 px-2 py-1 rounded">{movie.release_date?.split('-')[0]}</span>
+                        {runtime && <span className="bg-gray-800 px-2 py-1 rounded">{runtime}</span>}
                         {movie.note && (
                             <span className="bg-blue-900/50 text-blue-200 border border-blue-500/30 px-2 py-1 rounded">
                                 {movie.note}
@@ -64,11 +76,20 @@ function MovieDetail({ movie, onClose, onDelete, canDelete = false }) {
                         {movie.video_format && <span className="uppercase border border-gray-600 px-2 py-1 rounded">{movie.video_format}</span>}
                     </div>
 
+                    {genres && (
+                        <div className="flex flex-wrap gap-1.5 mb-4">
+                            {genres.map((g) => (
+                                <span key={g} className="text-xs bg-purple-900/40 text-purple-300 border border-purple-500/20 px-2 py-0.5 rounded-full">
+                                    {g}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
                     <p className="text-gray-300 leading-relaxed mb-6">
                         {movie.overview || "No plot summary available."}
                     </p>
 
-                    {/* Tech Specs (Placeholder for now until Phase 4 enrichment is fully hooked up) */}
                     <div className="grid grid-cols-2 gap-4 border-t border-gray-800 pt-4 text-sm">
                         <div>
                             <h4 className="text-gray-500 uppercase text-xs font-bold mb-1">Added</h4>
@@ -78,6 +99,18 @@ function MovieDetail({ movie, onClose, onDelete, canDelete = false }) {
                             <h4 className="text-gray-500 uppercase text-xs font-bold mb-1">UPC</h4>
                             <p className="font-mono text-gray-300">{movie.upc || 'N/A'}</p>
                         </div>
+                        {audioTracks && (
+                            <div className="col-span-2">
+                                <h4 className="text-gray-500 uppercase text-xs font-bold mb-1">Audio</h4>
+                                <p className="text-gray-300">{audioTracks.join(' · ')}</p>
+                            </div>
+                        )}
+                        {countries && (
+                            <div>
+                                <h4 className="text-gray-500 uppercase text-xs font-bold mb-1">Country</h4>
+                                <p className="text-gray-300">{countries.join(', ')}</p>
+                            </div>
+                        )}
                     </div>
 
                     {canDelete && (

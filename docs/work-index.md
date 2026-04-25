@@ -21,6 +21,8 @@
 | BLU-API-0001 | Claude cover photo identification (Scanner + useLookup) | DONE | high | — | 2026-04-24 |
 | BLU-API-0002 | GitHub Gist settings vault (cross-device key sync) | DONE | high | — | 2026-04-24 |
 | BLU-OBS-0001 | Anthropic usage counter + structured error handling | DONE | med | BLU-API-0001 | 2026-04-24 |
+| BLU-UX-0001 | Genre filter chips on home screen | DONE | med | BLU-DATA-0001 | 2026-04-24 |
+| BLU-UX-0002 | Display enrichment data in MovieDetail | DONE | med | BLU-DATA-0001 | 2026-04-24 |
 
 ## Dropped
 

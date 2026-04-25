@@ -19,6 +19,7 @@ function App() {
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeGenre, setActiveGenre] = useState(null);
 
   const {
     loading,
@@ -325,10 +326,15 @@ function App() {
     );
   }
 
-  const filteredMovies = movies.filter((m) =>
-    m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (m.note || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const allGenres = [...new Set(movies.flatMap((m) => m.genres || []))].sort();
+
+  const filteredMovies = movies.filter((m) => {
+    const matchesSearch =
+      m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (m.note || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGenre = !activeGenre || (m.genres || []).includes(activeGenre);
+    return matchesSearch && matchesGenre;
+  });
 
   return (
     <div className="min-h-screen bg-gray-900 text-white pb-safe">
@@ -370,6 +376,25 @@ function App() {
       </header>
 
       <main className="max-w-7xl mx-auto mt-4">
+        {allGenres.length > 0 && (
+          <div className="px-4 pb-3 flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveGenre(null)}
+              className={`text-xs px-3 py-1 rounded-full border transition-colors ${!activeGenre ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-600 text-gray-400 hover:text-white hover:border-gray-400'}`}
+            >
+              All
+            </button>
+            {allGenres.map((g) => (
+              <button
+                key={g}
+                onClick={() => setActiveGenre(activeGenre === g ? null : g)}
+                className={`text-xs px-3 py-1 rounded-full border transition-colors ${activeGenre === g ? 'bg-purple-700 border-purple-700 text-white' : 'border-gray-600 text-gray-400 hover:text-white hover:border-gray-400'}`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+        )}
         <MovieGrid
           movies={filteredMovies}
           loading={false}

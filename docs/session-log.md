@@ -4,6 +4,20 @@ Append-only continuity log.
 
 ---
 
+### 2026-04-24 - Session 5
+
+- Markers: `BLU-UX-0001`, `BLU-UX-0002`
+- Objective: Surface enrichment data in the UI — genres filter + MovieDetail tech specs.
+- Work completed:
+  - MovieDetail.jsx: added tagline (italic, conditionally shown), runtime ("1h 43m" format) in meta row, genre chips (purple), audio tracks and production countries in tech specs grid. All fields handled defensively for older records that lack them.
+  - App.jsx: genre filter chips above MovieGrid — derives available genres from movies array, "All" resets filter, clicking active genre deselects. Filter composes with existing text search.
+- Decisions made: No DEC file needed — additive UI change, no new data or auth surface.
+- Open issues/blockers: Genres and taglines only appear on movies enriched after this session's details_scraper.py update; older records will gain them on next enrichment run.
+- Next actions: None outstanding. Consider BLU-UX-0003 (genre chip on MovieCard overlay) if grid density warrants it.
+- References: BLU-DATA-0001, BLU-UX-0001, BLU-UX-0002
+
+---
+
 ### 2026-04-24 - Session 4
 
 - Markers: `BLU-API-0002`, `BLU-OBS-0001`
