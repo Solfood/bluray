@@ -529,7 +529,7 @@ export function useLookup(keys) {
               },
               {
                 type: 'text',
-                text: 'This is a photo of a Blu-ray or 4K disc cover. Identify the movie. Reply with JSON only, no markdown:\n{"title":"...", "year":null, "edition":""}',
+                text: 'This is a photo of a Blu-ray or 4K disc cover. Identify the movie.\nRespond with a raw JSON object only — no markdown, no code fences, no extra text.\nExample: {"title":"The Matrix","year":1999,"edition":"4K Ultra HD"}\nIf you cannot identify a title, respond: {"title":null}',
               },
             ],
           }],
@@ -542,9 +542,11 @@ export function useLookup(keys) {
 
       const data = await response.json();
       const raw = data?.content?.[0]?.text?.trim() || '';
+      // Strip markdown code fences Haiku sometimes adds despite instructions.
+      const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/,'').trim();
       let parsed;
       try {
-        parsed = JSON.parse(raw);
+        parsed = JSON.parse(cleaned);
       } catch {
         throw new Error(`Unexpected response: ${raw.slice(0, 80)}`);
       }
