@@ -11,7 +11,7 @@ const SCAN_FORMATS = [
   Html5QrcodeSupportedFormats.CODE_39,
 ];
 
-function Scanner({ onScan, onCoverPhoto, canUseCover, onClose }) {
+function Scanner({ onScan, onCoverPhoto, canUseCover, coverUsage, onClose }) {
   const html5QrRef = useRef(null);
   const mountedRef = useRef(false);
   const acceptedAtRef = useRef(0);
@@ -229,6 +229,11 @@ function Scanner({ onScan, onCoverPhoto, canUseCover, onClose }) {
                 <p className="text-xs text-gray-600 text-center">
                   Works on damaged barcodes, import editions, and unusual packaging.
                 </p>
+                {coverUsage && coverUsage.scans > 0 && (
+                  <p className="text-xs text-gray-600 text-center">
+                    ~{coverUsage.scans} scan{coverUsage.scans !== 1 ? 's' : ''} this month · est. ${coverUsage.cost.toFixed(3)}
+                  </p>
+                )}
               </>
             ) : (
               <div className="text-center space-y-3 py-4">

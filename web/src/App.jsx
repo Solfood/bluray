@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Scanner from './components/Scanner';
 import MovieGrid from './components/MovieGrid';
 import MovieDetail from './components/MovieDetail';
 import { GitHubClient } from './utils/github';
 import { moviesMatch, normalizeScanOrInput, sortMoviesNewestFirst } from './utils/movies';
 import { useLookup } from './hooks/useLookup';
+import { loadSettingsFromGist, saveSettingsToGist } from './utils/gist';
 
 function App() {
   const [view, setView] = useState('home');
@@ -12,6 +13,8 @@ function App() {
     const saved = localStorage.getItem('bluray_keys');
     return saved ? JSON.parse(saved) : { tmdb: '', github: '', anthropic: '' };
   });
+  const [gistStatus, setGistStatus] = useState(null); // null | 'syncing' | 'synced' | 'error'
+  const gistSyncedRef = useRef(false);
 
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -24,6 +27,7 @@ function App() {
     searchCandidates,
     scannedCode,
     userNote,
+    coverUsage,
     setScannedCode,
     setUserNote,
     handleScan,
@@ -36,10 +40,45 @@ function App() {
   useEffect(() => {
     if (keys.github) {
       loadMovies();
+      syncFromGist(keys.github);
     } else {
       loadPublicMovies();
     }
   }, [keys.github]);
+
+  const syncFromGist = async (token) => {
+    if (gistSyncedRef.current) return;
+    gistSyncedRef.current = true;
+    setGistStatus('syncing');
+    try {
+      const remote = await loadSettingsFromGist(token);
+      if (remote) {
+        setKeys((prev) => {
+          const merged = {
+            ...prev,
+            tmdb: remote.tmdb || prev.tmdb,
+            anthropic: remote.anthropic || prev.anthropic,
+          };
+          localStorage.setItem('bluray_keys', JSON.stringify(merged));
+          return merged;
+        });
+      }
+      setGistStatus('synced');
+    } catch (e) {
+      console.warn('Gist sync failed', e);
+      setGistStatus('error');
+    }
+  };
+
+  const pushToGist = async (token, { tmdb, anthropic }) => {
+    try {
+      await saveSettingsToGist(token, { tmdb, anthropic });
+      setGistStatus('synced');
+    } catch (e) {
+      console.warn('Gist save failed', e);
+      setGistStatus('error');
+    }
+  };
 
   const loadPublicMovies = async () => {
     try {
@@ -63,7 +102,10 @@ function App() {
   const saveKeys = (newKeys) => {
     setKeys(newKeys);
     localStorage.setItem('bluray_keys', JSON.stringify(newKeys));
-    if (newKeys.github) loadMovies();
+    if (newKeys.github) {
+      loadMovies();
+      pushToGist(newKeys.github, { tmdb: newKeys.tmdb, anthropic: newKeys.anthropic });
+    }
     setView('home');
   };
 
@@ -131,7 +173,15 @@ function App() {
     resetLookup();
   };
 
+  const syncStatusLabel = () => {
+    if (gistStatus === 'syncing') return '↻ Syncing…';
+    if (gistStatus === 'synced') return '✓ Synced to GitHub';
+    if (gistStatus === 'error') return '⚠ Sync failed';
+    return null;
+  };
+
   if (view === 'settings' || (!keys.github && view !== 'home')) {
+    const statusLabel = syncStatusLabel();
     return (
       <div className="min-h-screen bg-gray-900 text-white p-6 flex flex-col items-center justify-center">
         <h2 className="text-3xl font-bold mb-8">Admin Setup</h2>
@@ -148,7 +198,25 @@ function App() {
             <label className="block text-sm text-gray-400 mb-2">Anthropic API Key <span className="text-gray-600">(cover photo ID)</span></label>
             <input type="password" className="w-full bg-gray-900 p-4 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500" value={keys.anthropic || ''} onChange={(e) => setKeys({ ...keys, anthropic: e.target.value })} />
           </div>
-          <div className="flex gap-4 pt-4">
+
+          {statusLabel && (
+            <p className={`text-xs text-center ${gistStatus === 'error' ? 'text-yellow-500' : 'text-gray-500'}`}>
+              {statusLabel}
+              {gistStatus === 'error' && keys.github && (
+                <button
+                  onClick={() => {
+                    gistSyncedRef.current = false;
+                    syncFromGist(keys.github);
+                  }}
+                  className="ml-2 underline text-blue-400"
+                >
+                  Retry
+                </button>
+              )}
+            </p>
+          )}
+
+          <div className="flex gap-4 pt-2">
             <button onClick={() => setView('home')} className="flex-1 bg-gray-700 py-3 rounded-xl font-bold">Cancel</button>
             <button onClick={() => saveKeys(keys)} className="flex-1 bg-blue-600 py-3 rounded-xl font-bold shadow-lg shadow-blue-900/40">Save Access</button>
           </div>
@@ -163,6 +231,7 @@ function App() {
         onScan={(code) => { setView('add'); handleScan(code); }}
         onCoverPhoto={(file) => { setView('add'); identifyFromCover(file); }}
         canUseCover={Boolean(keys.anthropic)}
+        coverUsage={coverUsage}
         onClose={() => setView('home')}
       />
     );

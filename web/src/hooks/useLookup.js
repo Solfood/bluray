@@ -5,6 +5,27 @@ import {
 } from '../utils/movies';
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const COVER_USAGE_KEY = 'bluray_cover_usage';
+const COST_PER_SCAN = 0.001;
+
+const getCoverUsage = () => {
+  try {
+    const month = new Date().toISOString().slice(0, 7);
+    const stored = JSON.parse(localStorage.getItem(COVER_USAGE_KEY) || 'null');
+    if (!stored || stored.month !== month) return { month, scans: 0, cost: 0 };
+    return stored;
+  } catch {
+    return { month: new Date().toISOString().slice(0, 7), scans: 0, cost: 0 };
+  }
+};
+
+const recordCoverScan = () => {
+  const usage = getCoverUsage();
+  usage.scans += 1;
+  usage.cost = Math.round((usage.cost + COST_PER_SCAN) * 10000) / 10000;
+  try { localStorage.setItem(COVER_USAGE_KEY, JSON.stringify(usage)); } catch { /* ignore */ }
+  return usage;
+};
 const OPEN_DB_BASE_URL = 'https://raw.githubusercontent.com/Solfood/bluray-database/main';
 const LOOKUP_CACHE_KEY = 'bluray_lookup_cache_v1';
 const LOOKUP_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
@@ -18,6 +39,7 @@ export function useLookup(keys) {
   const [searchCandidates, setSearchCandidates] = useState([]);
   const [scannedCode, setScannedCode] = useState('');
   const [userNote, setUserNote] = useState('');
+  const [coverUsage, setCoverUsage] = useState(getCoverUsage);
 
   const openDbIndexesRef = useRef({ loaded: false, upc: null, title: null });
   const lookupCacheRef = useRef(new Map());
@@ -460,6 +482,19 @@ export function useLookup(keys) {
       img.src = URL.createObjectURL(file);
     });
 
+  const parseAnthropicError = async (response) => {
+    const body = await response.json().catch(() => ({}));
+    const type = body?.error?.type || '';
+    const msg = body?.error?.message || '';
+    if (type === 'authentication_error') return 'Invalid Anthropic API key — check Settings.';
+    if (type === 'permission_error' || msg.toLowerCase().includes('credit')) {
+      return 'Anthropic credits exhausted — add credits at console.anthropic.com/settings/billing';
+    }
+    if (type === 'rate_limit_error' || response.status === 429) return 'Rate limited — wait a moment and try again.';
+    if (type === 'overloaded_error' || response.status === 529) return 'Anthropic is overloaded — try again shortly.';
+    return msg || `API error ${response.status}`;
+  };
+
   const identifyFromCover = async (imageFile) => {
     if (!keys.anthropic) {
       setStatusMsg('Add an Anthropic API key in Settings to use cover identification.');
@@ -502,8 +537,7 @@ export function useLookup(keys) {
       });
 
       if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err?.error?.message || `API error ${response.status}`);
+        throw new Error(await parseAnthropicError(response));
       }
 
       const data = await response.json();
@@ -520,6 +554,9 @@ export function useLookup(keys) {
         setLoading(false);
         return;
       }
+
+      const updated = recordCoverScan();
+      setCoverUsage(updated);
 
       const title = parsed.title.trim();
       const year = parsed.year ? Number(parsed.year) : null;
@@ -569,6 +606,7 @@ export function useLookup(keys) {
     searchCandidates,
     scannedCode,
     userNote,
+    coverUsage,
     setScannedCode,
     setUserNote,
     handleScan,
