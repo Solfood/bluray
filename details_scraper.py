@@ -40,24 +40,16 @@ def enrich_movie(movie):
 
     details = res.json()
     
-    # Extract useful tech specs
-    # 1. Runtime
     movie['runtime'] = details.get('runtime')
-    
-    # 2. Production Countries (Region hints)
-    countries = [c['iso_3166_1'] for c in details.get('production_countries', [])]
-    movie['production_countries'] = countries
-    
-    # 3. Spoken Languages (Audio hints)
-    audio = [l['english_name'] for l in details.get('spoken_languages', [])]
-    movie['audio_tracks'] = audio
-    
-    # 4. Status Update
-    movie['overview'] = details.get('overview') or movie.get('overview') or ""
+    movie['production_countries'] = [c['iso_3166_1'] for c in details.get('production_countries', [])]
+    movie['audio_tracks'] = [l['english_name'] for l in details.get('spoken_languages', [])]
+    movie['genres'] = [g['name'] for g in details.get('genres', [])]
+    movie['tagline'] = details.get('tagline') or ''
+    movie['overview'] = details.get('overview') or movie.get('overview') or ''
     movie['status'] = 'enriched'
     movie['enriched_at'] = datetime.utcnow().isoformat()
-    
-    print(f"  > Added: {len(audio)} audio tracks, {movie['runtime']}m runtime.")
+
+    print(f"  > {movie['runtime']}m | {', '.join(movie['genres'])} | {len(movie['audio_tracks'])} audio tracks")
     return movie
 
 def main():

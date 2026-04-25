@@ -44,7 +44,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No enrichment changes to commit."
           else
-            git commit -m "Auto-enrich movie details"
+            git commit -m "Auto-enrich movie details [skip ci]"
             for i in 1 2 3; do
               git pull --rebase origin main && git push && break
               if [ $i -eq 3 ]; then

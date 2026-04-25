@@ -1,117 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Scanner from './components/Scanner';
 import MovieGrid from './components/MovieGrid';
 import MovieDetail from './components/MovieDetail';
 import { GitHubClient } from './utils/github';
-import { moviesMatch } from './utils/movies';
-
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
-const OPEN_DB_BASE_URL = "https://raw.githubusercontent.com/Solfood/bluray-database/main";
-const LOOKUP_CACHE_KEY = "bluray_lookup_cache_v1";
-const LOOKUP_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
-const TITLE_NOISE_WORDS = new Set([
-  '4k', 'uhd', 'ultra', 'hd', 'blu', 'ray', 'bluray', 'dvd', 'digital', 'code', 'edition',
-  'steelbook', 'limited', 'collectors', 'collector', 'special', 'remastered', 'region', 'disc',
-  'discs', 'video', 'arrow', 'criterion'
-]);
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const normalizeTitle = (value) =>
-  (value || "")
-    .toLowerCase()
-    .replace(/\(.*?\)|\[.*?\]/g, " ")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-
-const cleanProductTitle = (value) => {
-  const text = (value || '')
-    .replace(/\[[^\]]*]/g, ' ')
-    .replace(/\([^)]*\)/g, ' ')
-    .replace(/[|/]/g, ' ')
-    .replace(/\b(4k|uhd|ultra\s*hd|blu[\s-]?ray|dvd|digital\s*code|steelbook|limited\s*edition|collector'?s?\s*edition|arrow\s*video|criterion)\b/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  return text || (value || '').trim();
-};
-
-const buildTitleVariants = (value) => {
-  const raw = (value || '').trim();
-  if (!raw) return [];
-
-  const variants = new Set();
-  variants.add(cleanProductTitle(raw));
-  variants.add(raw.split(/[:\-|]/)[0].trim());
-  variants.add(raw.split(/[\[(]/)[0].trim());
-
-  const cleanedWords = cleanProductTitle(raw)
-    .split(/\s+/)
-    .filter((w) => w && !TITLE_NOISE_WORDS.has(w.toLowerCase()));
-  if (cleanedWords.length) variants.add(cleanedWords.join(' '));
-
-  return [...variants]
-    .map((v) => v.replace(/\s+/g, ' ').trim())
-    .filter((v) => v.length >= 2)
-    .slice(0, 4);
-};
-
-const safeYear = (value) => {
-  if (!value) return null;
-  const y = String(value).slice(0, 4);
-  return /^\d{4}$/.test(y) ? Number(y) : null;
-};
-
-const normalizeScanOrInput = (value) => {
-  const trimmed = (value || "").trim();
-  if (!trimmed) return "";
-  const digits = trimmed.replace(/\D/g, "");
-  return digits.length >= 8 ? digits : trimmed;
-};
-
-const buildUpcCandidates = (rawUpc) => {
-  const digits = (rawUpc || "").replace(/\D/g, "");
-  if (!digits) return [];
-
-  const variants = new Set([digits]);
-  if (digits.length === 13 && digits.startsWith("0")) variants.add(digits.slice(1));
-  if (digits.length === 12) variants.add(`0${digits}`);
-
-  return [...variants];
-};
-
-const sortMoviesNewestFirst = (items) =>
-  [...(items || [])].sort((a, b) => {
-    const aTs = Date.parse(a?.added_at || 0);
-    const bTs = Date.parse(b?.added_at || 0);
-    return (Number.isNaN(bTs) ? 0 : bTs) - (Number.isNaN(aTs) ? 0 : aTs);
-  });
-
-const scoreMovieCandidate = (candidate, preferredTitle, preferredYear) => {
-  let score = 0;
-  const candTitle = normalizeTitle(candidate.title || "");
-  const prefTitle = normalizeTitle(preferredTitle || "");
-
-  if (candTitle && prefTitle) {
-    if (candTitle === prefTitle) score += 100;
-    else if (candTitle.includes(prefTitle) || prefTitle.includes(candTitle)) score += 65;
-
-    const candWords = new Set(candTitle.split(" ").filter(Boolean));
-    const prefWords = prefTitle.split(" ").filter(Boolean);
-    const overlap = prefWords.filter((w) => candWords.has(w)).length;
-    score += Math.min(overlap * 6, 30);
-  }
-
-  const candYear = safeYear(candidate.release_date);
-  if (candYear && preferredYear) {
-    const delta = Math.abs(candYear - preferredYear);
-    if (delta === 0) score += 35;
-    else if (delta === 1) score += 20;
-    else if (delta <= 3) score += 8;
-  }
-
-  return score;
-};
+import { moviesMatch, normalizeScanOrInput, sortMoviesNewestFirst } from './utils/movies';
+import { useLookup } from './hooks/useLookup';
 
 function App() {
   const [view, setView] = useState('home');
@@ -120,19 +13,24 @@ function App() {
     return saved ? JSON.parse(saved) : { tmdb: '', github: '' };
   });
 
-  const [scannedCode, setScannedCode] = useState("");
-  const [movieData, setMovieData] = useState(null);
-  const [searchCandidates, setSearchCandidates] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [movies, setMovies] = useState([]);
-  const [statusMsg, setStatusMsg] = useState("");
   const [selectedMovie, setSelectedMovie] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [userNote, setUserNote] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const openDbIndexesRef = useRef({ loaded: false, upc: null, title: null });
-  const lookupCacheRef = useRef(new Map());
-  const activeSearchRef = useRef(0);
+  const {
+    loading,
+    statusMsg,
+    movieData,
+    searchCandidates,
+    scannedCode,
+    userNote,
+    setScannedCode,
+    setUserNote,
+    handleScan,
+    searchTMDB,
+    selectMovieCandidate,
+    reset: resetLookup,
+  } = useLookup(keys);
 
   useEffect(() => {
     if (keys.github) {
@@ -142,50 +40,9 @@ function App() {
     }
   }, [keys.github]);
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LOOKUP_CACHE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return;
-      const now = Date.now();
-      const valid = parsed.filter(([, value]) => value?.ts && now - value.ts < LOOKUP_CACHE_TTL_MS);
-      lookupCacheRef.current = new Map(valid);
-    } catch (e) {
-      console.warn("Lookup cache restore failed", e);
-    }
-  }, []);
-
-  const fetchWithTimeout = async (url, options = {}, timeoutMs = 7000) => {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      return await fetch(url, { ...options, signal: controller.signal });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  };
-
-  const fetchJsonWithRetry = async (url, options = {}, retries = 2, backoff = 600, timeoutMs = 7000) => {
-    try {
-      const res = await fetchWithTimeout(url, options, timeoutMs);
-      if (!res.ok) {
-        if (retries > 0 && res.status >= 500) throw new Error(`Status ${res.status}`);
-        return null;
-      }
-      return await res.json();
-    } catch (e) {
-      if (retries > 0) {
-        await sleep(backoff);
-        return fetchJsonWithRetry(url, options, retries - 1, Math.floor(backoff * 1.5), timeoutMs);
-      }
-      throw e;
-    }
-  };
-
   const loadPublicMovies = async () => {
     try {
-      const res = await fetchWithTimeout('https://raw.githubusercontent.com/Solfood/bluray/main/movies.json', {}, 9000);
+      const res = await fetch('https://raw.githubusercontent.com/Solfood/bluray/main/movies.json');
       if (res.ok) {
         const data = await res.json();
         setMovies(sortMoviesNewestFirst(data.movies || []));
@@ -195,13 +52,6 @@ function App() {
     }
   };
 
-  const saveKeys = (newKeys) => {
-    setKeys(newKeys);
-    localStorage.setItem('bluray_keys', JSON.stringify(newKeys));
-    if (newKeys.github) loadMovies();
-    setView('home');
-  };
-
   const loadMovies = async () => {
     if (!keys.github) return;
     const client = new GitHubClient(keys.github);
@@ -209,439 +59,50 @@ function App() {
     setMovies(sortMoviesNewestFirst(data.movies));
   };
 
-  const writeLookupCache = () => {
-    try {
-      localStorage.setItem(LOOKUP_CACHE_KEY, JSON.stringify([...lookupCacheRef.current.entries()].slice(-120)));
-    } catch (e) {
-      console.warn("Lookup cache write failed", e);
-    }
-  };
-
-  const setLookupCacheEntry = (key, value) => {
-    if (!key || !value) return;
-    lookupCacheRef.current.set(key, { ...value, ts: Date.now() });
-    if (lookupCacheRef.current.size > 120) {
-      const first = lookupCacheRef.current.keys().next().value;
-      lookupCacheRef.current.delete(first);
-    }
-    writeLookupCache();
-  };
-
-  const loadOpenDbIndexes = async () => {
-    if (openDbIndexesRef.current.loaded) return openDbIndexesRef.current;
-
-    const [upcIndex, titleIndex] = await Promise.all([
-      fetchJsonWithRetry(`${OPEN_DB_BASE_URL}/upc_index.json`, {}, 1, 500, 6000).catch(() => null),
-      fetchJsonWithRetry(`${OPEN_DB_BASE_URL}/title_index.json`, {}, 1, 500, 6000).catch(() => null)
-    ]);
-
-    openDbIndexesRef.current = {
-      loaded: true,
-      upc: upcIndex?.index || upcIndex || null,
-      title: titleIndex?.index || titleIndex || null
-    };
-
-    return openDbIndexesRef.current;
-  };
-
-  const lookupOpenDbByUpc = async (rawUpc) => {
-    const upcVariants = buildUpcCandidates(rawUpc);
-    if (upcVariants.length === 0) return null;
-
-    const indexes = await loadOpenDbIndexes().catch(() => ({ upc: null }));
-    if (indexes?.upc) {
-      for (const upc of upcVariants) {
-        if (indexes.upc[upc]) {
-          return { ...indexes.upc[upc], upc, source: 'open-db-index' };
-        }
-      }
-    }
-
-    for (const upc of upcVariants) {
-      if (upc.length < 3) continue;
-      const chunkUrl = `${OPEN_DB_BASE_URL}/upc/${upc[0]}/${upc[1]}/${upc[2]}/${upc}.json`;
-      try {
-        const upcData = await fetchJsonWithRetry(chunkUrl, {}, 1, 400, 5500);
-        if (upcData) return { ...upcData, upc, source: 'open-db-chunk' };
-      } catch (e) {
-        console.warn('Open DB chunk lookup failed', e);
-      }
-    }
-
-    return null;
-  };
-
-  const lookupOpenDbByTitle = async (title) => {
-    const normalized = normalizeTitle(title);
-    if (!normalized) return [];
-
-    const indexes = await loadOpenDbIndexes().catch(() => ({ title: null }));
-    const entry = indexes?.title?.[normalized];
-    if (!entry) return [];
-
-    const records = Array.isArray(entry) ? entry : [entry];
-    return records.map((r) => ({
-      id: null,
-      title: r.title,
-      release_date: r.year ? `${r.year}-01-01` : '',
-      overview: 'Found in Open Database.',
-      note: r.edition || '',
-      _source: 'open-db-title-index',
-      _score: 45
-    }));
-  };
-
-  const lookupUpcItemDb = async (upc) => {
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.upcitemdb.com/prod/trial/lookup?upc=${upc}`)}`;
-    const data = await fetchJsonWithRetry(proxyUrl, {}, 1, 700, 7000).catch(() => null);
-    const rawTitle = data?.items?.[0]?.title?.trim();
-    if (!rawTitle) return null;
-
-    const titleCandidates = buildTitleVariants(rawTitle);
-    const cleanTitle = titleCandidates[0] || rawTitle;
-    return { rawTitle, cleanTitle, titleCandidates };
-  };
-
-  const searchTmdbByTitleCandidates = async (titles, preferredTitle = '', preferredYear = null) => {
-    if (!keys.tmdb) return [];
-    const queries = [...new Set((titles || []).filter(Boolean))].slice(0, 3);
-    if (queries.length === 0) return [];
-
-    const results = await Promise.all(
-      queries.map((title) =>
-        fetchJsonWithRetry(
-          `${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(title)}`,
-          {},
-          1,
-          400,
-          4500
-        ).catch(() => null)
-      )
-    );
-
-    const merged = results.flatMap((r) => r?.results || []);
-    return rankTmdbResults(merged, preferredTitle || queries[0], preferredYear);
-  };
-
-  const lookupTmdbByUpc = async (upcRaw) => {
-    if (!keys.tmdb) return [];
-    const upcs = buildUpcCandidates(upcRaw);
-    if (!upcs.length) return [];
-
-    const responses = await Promise.all(
-      upcs.slice(0, 2).map((upc) =>
-        fetchJsonWithRetry(
-          `${TMDB_BASE_URL}/find/${upc}?api_key=${keys.tmdb}&external_source=upc`,
-          {},
-          1,
-          450,
-          4000
-        ).catch(() => null)
-      )
-    );
-
-    const merged = responses.flatMap((r) => r?.movie_results || []);
-    return merged;
-  };
-
-  const rankTmdbResults = (results, preferredTitle = '', preferredYear = null) => {
-    const unique = [];
-    const seen = new Set();
-
-    for (const item of results || []) {
-      const key = item.id ? `id:${item.id}` : `t:${normalizeTitle(item.title)}:${safeYear(item.release_date) || 'na'}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      unique.push(item);
-    }
-
-    return unique
-      .map((item) => ({ ...item, _score: scoreMovieCandidate(item, preferredTitle, preferredYear), _source: 'tmdb' }))
-      .sort((a, b) => b._score - a._score);
-  };
-
-  const selectMovieCandidate = (candidate, detectedEdition = '') => {
-    if (!candidate) return;
-    const merged = {
-      ...candidate,
-      detected_edition: detectedEdition,
-      note: candidate.note || detectedEdition || ''
-    };
-    setMovieData(merged);
-    setUserNote(merged.note || '');
-    setStatusMsg('Movie selected.');
-  };
-
-  const chooseCandidates = (candidates, detectedEdition = '') => {
-    if (!candidates || candidates.length === 0) {
-      setMovieData(null);
-      setSearchCandidates([]);
-      return;
-    }
-
-    if (candidates.length === 1) {
-      setSearchCandidates(candidates);
-      selectMovieCandidate(candidates[0], detectedEdition);
-      return;
-    }
-
-    const top = candidates[0];
-    const second = candidates[1];
-    const confidentAutoPick = top._score >= 120 && (!second || top._score - second._score >= 25);
-
-    setSearchCandidates(candidates.slice(0, 8));
-
-    if (confidentAutoPick) {
-      selectMovieCandidate(top, detectedEdition);
-    } else {
-      setMovieData(null);
-      setUserNote(detectedEdition || '');
-      setStatusMsg('Multiple matches found. Choose the correct movie.');
-    }
-  };
-
-  const handleScan = async (code) => {
-    const normalized = normalizeScanOrInput(code);
-    setScannedCode(normalized);
-    setView('add');
-    if (normalized) searchTMDB(normalized);
-  };
-
-  const searchTMDB = async (query) => {
-    const normalizedQuery = normalizeScanOrInput(query);
-    if (!normalizedQuery) {
-      setStatusMsg('Enter a title or UPC.');
-      return;
-    }
-
-    const searchId = Date.now();
-    activeSearchRef.current = searchId;
-
-    const cached = lookupCacheRef.current.get(normalizedQuery);
-    if (cached && Date.now() - cached.ts < LOOKUP_CACHE_TTL_MS) {
-      setLoading(false);
-      setStatusMsg("Loaded instantly from recent scan.");
-      chooseCandidates(cached.candidates || [], cached.detectedEdition || '');
-      return;
-    }
-
-    setLoading(true);
-    setStatusMsg('Searching...');
-    setMovieData(null);
-    setSearchCandidates([]);
-
-    let detectedEdition = '';
-
-    try {
-      const isBarcode = /^\d{8,14}$/.test(normalizedQuery);
-      let preferredTitle = '';
-      let preferredYear = null;
-      let tmdbResults = [];
-      let openDbRecord = null;
-
-      if (isBarcode && keys.tmdb) {
-        setStatusMsg(`Analyzing barcode: ${normalizedQuery}...`);
-        const [tmdbDirect, openDbDirect] = await Promise.all([
-          lookupTmdbByUpc(normalizedQuery),
-          lookupOpenDbByUpc(normalizedQuery),
-        ]);
-        tmdbResults = tmdbDirect || [];
-        openDbRecord = openDbDirect || null;
-      }
-
-      if (isBarcode && !openDbRecord && tmdbResults.length === 0) {
-        setStatusMsg('Checking Open Database...');
-        openDbRecord = await lookupOpenDbByUpc(normalizedQuery);
-
-        if (openDbRecord) {
-          preferredTitle = (openDbRecord.title || '').trim();
-          preferredYear = safeYear(openDbRecord.year);
-          detectedEdition = openDbRecord.edition || openDbRecord.title || '';
-
-          if (keys.tmdb && preferredTitle) {
-            setStatusMsg(`Found "${preferredTitle}". Matching TMDB...`);
-            const rankedFromPreferred = await searchTmdbByTitleCandidates(
-              buildTitleVariants(preferredTitle),
-              preferredTitle,
-              preferredYear
-            );
-            tmdbResults = rankedFromPreferred;
-          }
-        }
-      }
-
-      if (!isBarcode) {
-        preferredTitle = normalizedQuery;
-
-        const openDbTitleCandidates = await lookupOpenDbByTitle(normalizedQuery);
-
-        if (keys.tmdb) {
-          setStatusMsg(`Searching title: "${normalizedQuery}"...`);
-          const searchData = await fetchJsonWithRetry(
-            `${TMDB_BASE_URL}/search/movie?api_key=${keys.tmdb}&query=${encodeURIComponent(normalizedQuery)}`,
-            {},
-            1,
-            500,
-            6500
-          );
-          tmdbResults = searchData?.results || [];
-        }
-
-        const rankedTmdb = rankTmdbResults(tmdbResults, preferredTitle, null);
-        const merged = [...rankedTmdb, ...openDbTitleCandidates];
-
-        if (merged.length > 0) {
-          chooseCandidates(merged, detectedEdition);
-          if (activeSearchRef.current === searchId) {
-            setLookupCacheEntry(normalizedQuery, {
-              candidates: merged,
-              movieData: merged.length === 1 ? merged[0] : null,
-              detectedEdition,
-            });
-          }
-        } else {
-          chooseCandidates([{
-            id: null,
-            title: normalizedQuery,
-            release_date: '',
-            overview: 'Manual title entry. TMDB match unavailable.',
-            note: '',
-            _source: 'manual-title',
-            _score: 1
-          }], '');
-        }
-
-        return;
-      }
-
-      const ranked = Array.isArray(tmdbResults) && tmdbResults[0]?._score !== undefined
-        ? tmdbResults
-        : rankTmdbResults(tmdbResults, preferredTitle, preferredYear);
-
-      if (ranked.length > 0) {
-        setStatusMsg('Matches found.');
-        chooseCandidates(ranked, detectedEdition);
-        if (activeSearchRef.current === searchId) {
-          setLookupCacheEntry(normalizedQuery, {
-            candidates: ranked,
-            movieData: ranked.length === 1 ? ranked[0] : null,
-            detectedEdition,
-          });
-        }
-      } else if (openDbRecord) {
-        const fallback = {
-          id: null,
-          title: openDbRecord.title,
-          release_date: openDbRecord.year ? `${openDbRecord.year}-01-01` : '',
-          overview: 'Found in Open Database. TMDB details unavailable.',
-          note: openDbRecord.edition || '',
-          _source: openDbRecord.source,
-          _score: 70
-        };
-        chooseCandidates([fallback], detectedEdition);
-        if (activeSearchRef.current === searchId) {
-          setLookupCacheEntry(normalizedQuery, { candidates: [fallback], movieData: fallback, detectedEdition });
-        }
-      } else if (keys.tmdb) {
-        setStatusMsg('Trying global UPC lookup...');
-        let upcFallback = null;
-
-        for (const upc of buildUpcCandidates(normalizedQuery)) {
-          upcFallback = await lookupUpcItemDb(upc);
-          if (upcFallback) break;
-        }
-
-        if (upcFallback) {
-          detectedEdition = upcFallback.rawTitle;
-          const fallbackRanked = await searchTmdbByTitleCandidates(
-            upcFallback.titleCandidates || [upcFallback.cleanTitle],
-            upcFallback.cleanTitle,
-            null
-          );
-
-          if (fallbackRanked.length > 0) {
-            setStatusMsg('Matches found via UPC lookup.');
-            chooseCandidates(fallbackRanked, detectedEdition);
-            if (activeSearchRef.current === searchId) {
-              setLookupCacheEntry(normalizedQuery, {
-                candidates: fallbackRanked,
-                movieData: fallbackRanked.length === 1 ? fallbackRanked[0] : null,
-                detectedEdition,
-              });
-            }
-          } else {
-            const fallbackManual = {
-              id: null,
-              title: upcFallback.cleanTitle,
-              release_date: '',
-              overview: 'Found by UPC lookup, but TMDB match is unavailable.',
-              note: upcFallback.rawTitle,
-              _source: 'upcitemdb',
-              _score: 55
-            };
-            chooseCandidates([fallbackManual], detectedEdition);
-            if (activeSearchRef.current === searchId) {
-              setLookupCacheEntry(normalizedQuery, { candidates: [fallbackManual], movieData: fallbackManual, detectedEdition });
-            }
-          }
-        } else {
-          setStatusMsg('Barcode not found. Try title search or manual entry.');
-        }
-      } else {
-        setStatusMsg('Barcode not found. Try title search or manual entry.');
-      }
-    } catch (e) {
-      console.error(e);
-      setStatusMsg(`Lookup failed: ${e.message}`);
-    } finally {
-      setLoading(false);
-    }
+  const saveKeys = (newKeys) => {
+    setKeys(newKeys);
+    localStorage.setItem('bluray_keys', JSON.stringify(newKeys));
+    if (newKeys.github) loadMovies();
+    setView('home');
   };
 
   const handleSaveMovie = async () => {
     if (!movieData || !keys.github) return;
 
-    setLoading(true);
+    const client = new GitHubClient(keys.github);
+    const normalized = normalizeScanOrInput(scannedCode);
+    const upcDigits = normalized.replace(/\D/g, '');
+    const hasTmdbId = typeof movieData.id === 'number';
+
+    const newMovie = {
+      id: hasTmdbId ? movieData.id : `manual-${Date.now()}`,
+      tmdb_id: hasTmdbId ? movieData.id : null,
+      title: movieData.title,
+      poster_path: movieData.poster_path || null,
+      release_date: movieData.release_date || '',
+      overview: movieData.overview || '',
+      upc: upcDigits || normalized,
+      added_at: new Date().toISOString(),
+      note: userNote,
+      status: hasTmdbId ? 'pending_enrichment' : 'needs_tmdb_match',
+      match_source: movieData._source || 'manual',
+      match_score: movieData._score || null,
+    };
+
+    // Optimistic update so the save feels instant before the GitHub round-trip.
+    setMovies((prev) => {
+      if (prev.some((m) => moviesMatch(m, newMovie))) return prev;
+      return sortMoviesNewestFirst([newMovie, ...prev]);
+    });
+    setView('home');
+    resetLookup();
+
     try {
-      const client = new GitHubClient(keys.github);
-      const normalized = normalizeScanOrInput(scannedCode);
-      const upcDigits = normalized.replace(/\D/g, '');
-      const hasTmdbId = typeof movieData.id === 'number';
-
-      const newMovie = {
-        id: hasTmdbId ? movieData.id : `manual-${Date.now()}`,
-        tmdb_id: hasTmdbId ? movieData.id : null,
-        title: movieData.title,
-        poster_path: movieData.poster_path || null,
-        release_date: movieData.release_date || '',
-        overview: movieData.overview || '',
-        upc: upcDigits || normalized,
-        added_at: new Date().toISOString(),
-        note: userNote,
-        status: hasTmdbId ? 'pending_enrichment' : 'needs_tmdb_match',
-        match_source: movieData._source || 'manual',
-        match_score: movieData._score || null
-      };
-
-      // Optimistic UI update so save feels instant in app even before GitHub round-trip completes.
-      setMovies((prev) => {
-        if (prev.some((m) => moviesMatch(m, newMovie))) return prev;
-        return sortMoviesNewestFirst([newMovie, ...prev]);
-      });
-      setView('home');
-      setMovieData(null);
-      setSearchCandidates([]);
-      setScannedCode('');
-      setStatusMsg('');
-      setLoading(false);
-
       await client.addMovie(newMovie);
       loadMovies();
     } catch (e) {
       alert(`Failed to save: ${e.message}`);
       loadMovies();
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -662,6 +123,11 @@ function App() {
       alert(`Failed to delete: ${e.message}`);
       setMovies(previous);
     }
+  };
+
+  const handleBackToLibrary = () => {
+    setView('home');
+    resetLookup();
   };
 
   if (view === 'settings' || (!keys.github && view !== 'home')) {
@@ -686,13 +152,20 @@ function App() {
     );
   }
 
-  if (view === 'scan') return <Scanner onScan={handleScan} onClose={() => setView('home')} />;
+  if (view === 'scan') {
+    return (
+      <Scanner
+        onScan={(code) => { setView('add'); handleScan(code); }}
+        onClose={() => setView('home')}
+      />
+    );
+  }
 
   if (view === 'add') {
     return (
       <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
         <div className="max-w-2xl mx-auto">
-          <button onClick={() => setView('home')} className="mb-6 text-gray-400 flex items-center gap-2 text-lg">
+          <button onClick={handleBackToLibrary} className="mb-6 text-gray-400 flex items-center gap-2 text-lg">
             <span className="text-2xl">&larr;</span> Back to Library
           </button>
           <h2 className="text-3xl font-bold mb-6">Add Movie</h2>

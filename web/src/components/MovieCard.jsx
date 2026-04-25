@@ -20,8 +20,12 @@ function MovieCard({ movie, onClick }) {
                     alt={movie.title}
                 />
             ) : (
-                <div className="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center text-gray-500">
-                    No Poster
+                <div className="w-full aspect-[2/3] bg-gray-700 flex flex-col items-center justify-center gap-2 p-4">
+                    <span className="text-3xl">🎬</span>
+                    <p className="text-gray-300 text-sm font-semibold text-center line-clamp-3 leading-snug">{movie.title}</p>
+                    {movie.release_date && (
+                        <p className="text-gray-500 text-xs">{movie.release_date.split('-')[0]}</p>
+                    )}
                 </div>
             )}
 
