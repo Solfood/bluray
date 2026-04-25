@@ -1,0 +1,40 @@
+project_name: "bluray"
+marker_prefix: "BLU"
+owner: "Solfood"
+repo_url: "https://github.com/Solfood/bluray"
+tech_stack: "React 18, Vite, Tailwind CSS, Octokit (GitHub API), Python 3 (TMDB scraper)"
+deployment_env: "GitHub Pages (web/dist)"
+
+tracks:
+  - ARCH   # architecture decisions
+  - API    # API surface changes (GitHub API, TMDB API)
+  - DATA   # data model and persistence (movies.json schema)
+  - SEC    # security and auth (GitHub token handling)
+  - OBS    # observability and metrics
+  - DX     # developer experience and tooling
+  - FIX    # bug fixes
+
+suite:
+  - name: "Willowbrook"
+    url: "https://github.com/Solfood/Willowbrook"
+    relationship: "sibling GitHub Pages app — same owner, shared deployment pattern"
+  - name: "recipes-wiki"
+    url: "https://github.com/Solfood/recipes-wiki"
+    relationship: "sibling GitHub Pages site — same owner, shared deployment pattern"
+
+risk_tolerance: "medium"
+critical_assets:
+  - "github_token"        # user's personal GitHub token stored in localStorage
+  - "movies_json"         # canonical movie database in GitHub repo
+  - "tmdb_api_key"        # TMDB API key used by scrapers
+compliance_requirements: []
+blocking_severities:
+  - "critical"
+  - "high"
+mandatory_gates:
+  - "coherence"
+  - "security"
+  - "engineering_fundamentals"
+  - "verification"
+  - "safety"
+  - "release_readiness"
