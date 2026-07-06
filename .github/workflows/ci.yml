@@ -1,0 +1,32 @@
+name: Web CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'web/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - 'web/**'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: web
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
