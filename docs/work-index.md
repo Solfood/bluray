@@ -6,6 +6,7 @@
 
 | ID | Title | Status | Priority | Parent refs | Updated |
 |---|---|---|---|---|---|
+| BLU-ARCH-0002 | Refactor static SPA to self-hosted React Router v7 full-stack app | PLANNED | high | DEC-0002 | 2026-07-06 |
 
 ## Completed
 
