@@ -18,7 +18,7 @@ export function createMovie(db: Database, input: any) {
     upc: str(input.upc, 100),
     added_at: new Date().toISOString(),
     note: str(input.note, 200) ?? '',
-    status: tmdbId ? 'pending_enrichment' : 'needs_tmdb_match',
+    status: tmdbId !== null ? 'pending_enrichment' : 'needs_tmdb_match',
     match_source: str(input.match_source, 50) ?? 'manual',
     match_score: Number.isInteger(input.match_score) ? input.match_score : undefined,
   };
