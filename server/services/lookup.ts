@@ -7,9 +7,14 @@ import { searchMovie, findByUpc, fetchJsonWithRetry } from './tmdb';
 const OPEN_DB_BASE_URL = 'https://raw.githubusercontent.com/Solfood/bluray-database/main';
 const CACHE_TTL_MS = 1000 * 60 * 60 * 12;
 const CACHE_MAX = 120;
+// If both OpenDB index fetches fail, don't wedge the tier off for the process
+// lifetime (this is a long-lived server, not a page that reloads) — retry after
+// this cooldown instead of permanently marking it loaded.
+const OPEN_DB_RETRY_MS = 5 * 60 * 1000;
 
 const cache = new Map<string, { ts: number; value: LookupResult }>();
 let openDbIndexes: { loaded: boolean; upc: any; title: any } = { loaded: false, upc: null, title: null };
+let openDbLastFailureAt: number | null = null;
 
 export interface LookupResult {
   status: 'ok' | 'not_found';
@@ -17,17 +22,31 @@ export interface LookupResult {
   detectedEdition: string;
 }
 
+/** Test-only: reset module-level OpenDB state (loaded flag + cooldown timer). */
+export function __resetOpenDbStateForTests() {
+  openDbIndexes = { loaded: false, upc: null, title: null };
+  openDbLastFailureAt = null;
+}
+
 async function loadOpenDbIndexes() {
   if (openDbIndexes.loaded) return openDbIndexes;
+  if (openDbLastFailureAt !== null && Date.now() - openDbLastFailureAt < OPEN_DB_RETRY_MS) {
+    return openDbIndexes;
+  }
   const [upcIndex, titleIndex] = await Promise.all([
     fetchJsonWithRetry(`${OPEN_DB_BASE_URL}/upc_index.json`, 1, 500, 6000).catch(() => null),
     fetchJsonWithRetry(`${OPEN_DB_BASE_URL}/title_index.json`, 1, 500, 6000).catch(() => null),
   ]);
-  openDbIndexes = {
-    loaded: true,
-    upc: upcIndex?.index || upcIndex || null,
-    title: titleIndex?.index || titleIndex || null,
-  };
+  const upc = upcIndex?.index || upcIndex || null;
+  const title = titleIndex?.index || titleIndex || null;
+  if (upc === null && title === null) {
+    // Total failure: record it and let the next call retry after the cooldown.
+    openDbLastFailureAt = Date.now();
+    openDbIndexes = { loaded: false, upc: null, title: null };
+    return openDbIndexes;
+  }
+  openDbLastFailureAt = null;
+  openDbIndexes = { loaded: true, upc, title };
   return openDbIndexes;
 }
 
