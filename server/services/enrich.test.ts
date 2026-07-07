@@ -84,4 +84,23 @@ describe('runEnrichment', () => {
     expect(rec.overview).toBe('keep me');
     expect(rec.status).toBe('enriched');
   });
+
+  it('caps genres array at 20 items', async () => {
+    // Create TMDB response with 25 genres
+    const genresArray = Array.from({ length: 25 }, (_, i) => ({ name: `G${i + 1}` }));
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+      runtime: 120,
+      production_countries: [],
+      spoken_languages: [],
+      genres: genresArray,
+      tagline: '',
+      overview: 'Test',
+    }))));
+    const { runEnrichment } = await import('./enrich');
+    const pk = insertMovie(db, { id: 2, tmdb_id: 2, title: 'Many Genres', added_at: '2026-01-01T00:00:00.000Z', status: 'pending_enrichment' });
+    await runEnrichment(pk);
+    const rec = rowToRecord(getMovie(db, pk));
+    expect(rec.genres).toHaveLength(20);
+    expect(rec.genres).toEqual(Array.from({ length: 20 }, (_, i) => `G${i + 1}`));
+  });
 });
