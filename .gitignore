@@ -1,1 +1,7 @@
 .DS_Store
+.superpowers/
+node_modules/
+build/
+data/
+.env
+.react-router/

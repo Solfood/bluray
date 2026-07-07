@@ -1,0 +1,10 @@
+node_modules
+build
+data
+web
+docs
+policies
+scripts
+.git
+.github
+*.py
