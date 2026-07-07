@@ -38,33 +38,52 @@ export async function identifyCover(db: Database, image: string, mediaType: stri
   }
   if (!MEDIA_TYPES.has(mediaType)) return { error: 'media_type must be image/jpeg, image/png, or image/webp', status: 400 };
 
-  const cap = Number(process.env.SCAN_MONTHLY_CAP || 200);
+  const rawCap = Number(process.env.SCAN_MONTHLY_CAP || 200);
+  const cap = Number.isFinite(rawCap) && rawCap >= 0 ? rawCap : 200;
+
+  // Cap check + usage INSERT run back-to-back with no await in between.
+  // better-sqlite3 is synchronous, so on Node's single thread this
+  // check-and-reserve is atomic: two concurrent requests at cap-1 cannot
+  // both pass. The row is a reservation — released below if the API call fails.
   const usage = getMonthlyUsage(db);
   if (usage.scans >= cap) {
     return { error: `Monthly scan cap reached (${cap}). Raise SCAN_MONTHLY_CAP if intentional.`, status: 429 };
   }
+  const reservation = db.prepare('INSERT INTO scan_usage (month, created_at, cost) VALUES (?, ?, ?)')
+    .run(new Date().toISOString().slice(0, 7), new Date().toISOString(), COST_PER_SCAN);
+  const releaseReservation = () =>
+    db.prepare('DELETE FROM scan_usage WHERE id = ?').run(reservation.lastInsertRowid);
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 128,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: mediaType, data: image } },
-          { type: 'text', text: PROMPT },
-        ],
-      }],
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 128,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: image } },
+            { type: 'text', text: PROMPT },
+          ],
+        }],
+      }),
+    });
+  } catch {
+    releaseReservation();
+    return { error: 'Could not reach Anthropic — network error, try again.', status: 502 };
+  }
 
-  if (!response.ok) return { error: await anthropicErrorMessage(response), status: 502 };
+  if (!response.ok) {
+    releaseReservation();
+    return { error: await anthropicErrorMessage(response), status: 502 };
+  }
 
   const data: any = await response.json().catch(() => null);
   const raw = data?.content?.[0]?.text?.trim() || '';
@@ -73,11 +92,9 @@ export async function identifyCover(db: Database, image: string, mediaType: stri
   try {
     parsed = JSON.parse(cleaned);
   } catch {
+    releaseReservation();
     return { error: `Unexpected model response: ${raw.slice(0, 80)}`, status: 502 };
   }
-
-  db.prepare('INSERT INTO scan_usage (month, created_at, cost) VALUES (?, ?, ?)')
-    .run(new Date().toISOString().slice(0, 7), new Date().toISOString(), COST_PER_SCAN);
 
   if (!parsed?.title || typeof parsed.title !== 'string') {
     return { identified: null, usage: getMonthlyUsage(db) };
