@@ -39,4 +39,49 @@ describe('import/export', () => {
     expect(() => importMoviesJson(db, '{"nope": true}')).toThrow(/movies/);
     expect(() => importMoviesJson(db, JSON.stringify({ movies: [{ id: 1 }] }))).toThrow(/title/);
   });
+
+  it('strips personal fields from input records instead of importing them', () => {
+    const db = freshDb();
+    const input = JSON.stringify({
+      movies: [
+        {
+          id: 1,
+          title: 'Personal Fields Movie',
+          added_at: '2026-01-01T00:00:00.000Z',
+          watch_status: 'watched',
+          personal_rating: 5,
+          loaned_to: 'Sam',
+          loaned_at: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+    });
+    importMoviesJson(db, input);
+    const out = JSON.parse(exportMoviesJson(db));
+    expect(out.movies).toHaveLength(1);
+    const exported = out.movies[0];
+    expect(exported.watch_status).toBeUndefined();
+    expect(exported.personal_rating).toBeUndefined();
+    expect(exported.loaned_to).toBeUndefined();
+    expect(exported.loaned_at).toBeUndefined();
+
+    const row = db.prepare('SELECT * FROM movies WHERE id = ?').get('1') as any;
+    expect(row.watch_status).toBe('unwatched');
+    expect(row.personal_rating).toBeNull();
+    expect(row.loaned_to).toBeNull();
+    expect(row.loaned_at).toBeNull();
+  });
+
+  it('replace mode deletes existing rows before importing so re-import does not duplicate', () => {
+    const db = freshDb();
+    const input = JSON.stringify({
+      movies: [
+        { id: 1, title: 'First', added_at: '2026-01-01T00:00:00.000Z' },
+        { id: 2, title: 'Second', added_at: '2026-01-02T00:00:00.000Z' },
+      ],
+    });
+    importMoviesJson(db, input);
+    importMoviesJson(db, input, { replace: true });
+    const count = (db.prepare('SELECT COUNT(*) AS n FROM movies').get() as any).n;
+    expect(count).toBe(2);
+  });
 });

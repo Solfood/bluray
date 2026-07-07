@@ -14,5 +14,5 @@ if (existing > 0 && !force) {
   process.exit(1);
 }
 
-const count = importMoviesJson(db, fs.readFileSync(file, 'utf8'));
+const count = importMoviesJson(db, fs.readFileSync(file, 'utf8'), { replace: force });
 console.log(`Imported ${count} movies from ${file}`);
