@@ -7,4 +7,5 @@ policies
 scripts
 .git
 .github
+.env
 *.py

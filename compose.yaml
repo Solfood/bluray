@@ -1,0 +1,12 @@
+services:
+  bluray:
+    build: .
+    # TM-0001: keep this LAN-only. If the host has multiple interfaces,
+    # bind explicitly to the LAN address, e.g. "192.168.1.50:3000:3000".
+    # Never port-forward this service on the router.
+    ports:
+      - "3000:3000"
+    env_file: .env
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
