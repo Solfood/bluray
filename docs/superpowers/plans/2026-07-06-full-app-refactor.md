@@ -35,7 +35,7 @@
 - Consumes: nothing.
 - Produces: `npm run dev|build|test` working from repo root; route table registering `routes/home.jsx` and all `/api/*` paths used by later tasks.
 
-- [ ] **Step 1: Write config files**
+- [x] **Step 1: Write config files**
 
 `package.json`:
 
@@ -161,7 +161,7 @@ data/
 .env
 ```
 
-- [ ] **Step 2: Write app shell**
+- [x] **Step 2: Write app shell**
 
 `app/routes.ts` (full route table now; later tasks fill the files in):
 
@@ -228,7 +228,7 @@ export default function Home() {
 }
 ```
 
-- [ ] **Step 3: Write the smoke test**
+- [x] **Step 3: Write the smoke test**
 
 `server/smoke.test.ts`:
 
@@ -242,14 +242,14 @@ describe('scaffold', () => {
 });
 ```
 
-- [ ] **Step 4: Install and verify**
+- [x] **Step 4: Install and verify**
 
 Run: `npm install`
 Run: `npm test` — Expected: 1 test passes.
 Run: `npm run build` — Expected: build completes, `build/server/index.js` and `build/client/` exist.
 Run: `npm run dev` in background, `curl -s http://localhost:3000 | grep "bluray app scaffold"` — Expected: match. Stop the dev server.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add package.json package-lock.json vite.config.ts react-router.config.ts tsconfig.json vitest.config.ts .dockerignore .gitignore app/ server/
@@ -274,7 +274,7 @@ git commit -m "BLU-ARCH-0002: Scaffold React Router v7 app at repo root"
   - `recordToRow(record): object` — inverse of rowToRecord for insertion.
   - `insertMovie(db, record): number` (returns pk), `getMovie(db, pk)`, `listMovies(db)` (added_at DESC), `updateMovie(db, pk, fields)`, `deleteMovie(db, pk)`, `searchMovies(db, q)` (FTS5), `getMeta(db, key): string | null`, `setMeta(db, key, value)`.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 `server/db/movies.test.ts`:
 
@@ -376,11 +376,11 @@ describe('crud + search + meta', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run server/db` — Expected: FAIL (modules don't exist).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `server/db/index.ts`:
 
@@ -593,11 +593,11 @@ export function setMeta(db: Database, key: string, value: string): void {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run server/db` — Expected: all PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/db/
@@ -619,7 +619,7 @@ git commit -m "BLU-ARCH-0002: SQLite layer — schema, FTS5, record mapping, CRU
   - `exportMoviesJson(db): string` — `JSON.stringify({ movies }, null, 2)`, movies ordered by pk (= original file order after import).
   - `npm run import -- <path>` CLI (refuses to run on a non-empty DB without `--force`).
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 `server/db/transfer.test.ts`:
 
@@ -668,11 +668,11 @@ describe('import/export', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run server/db/transfer.test.ts` — Expected: FAIL (module doesn't exist).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `server/db/transfer.ts`:
 
@@ -724,11 +724,11 @@ const count = importMoviesJson(db, fs.readFileSync(file, 'utf8'));
 console.log(`Imported ${count} movies from ${file}`);
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run server/db` — Expected: all PASS, including the real-file round trip.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/db/
@@ -747,11 +747,11 @@ git commit -m "BLU-ARCH-0002: movies.json import/export with lossless round-trip
 - Consumes: nothing.
 - Produces: `normalizeTitle`, `cleanProductTitle`, `buildTitleVariants`, `safeYear`, `normalizeScanOrInput`, `buildUpcCandidates`, `sortMoviesNewestFirst`, `scoreMovieCandidate`, `moviesMatch` — exact same signatures as `web/src/utils/movies.js` (used by both server services and client UI).
 
-- [ ] **Step 1: Copy the module**
+- [x] **Step 1: Copy the module**
 
 Run: `mkdir -p app/lib && cp web/src/utils/movies.js app/lib/movies.js` — no edits.
 
-- [ ] **Step 2: Write tests (this module never had any)**
+- [x] **Step 2: Write tests (this module never had any)**
 
 `app/lib/movies.test.js`:
 
@@ -802,11 +802,11 @@ describe('matching utils', () => {
 });
 ```
 
-- [ ] **Step 3: Run tests**
+- [x] **Step 3: Run tests**
 
 Run: `npx vitest run app/lib` — Expected: all PASS (implementation already exists; if any expectation mismatches actual behavior, fix the TEST — this module's behavior is the contract, do not change `movies.js`).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add app/lib/
@@ -827,7 +827,7 @@ git commit -m "BLU-ARCH-0002: port shared matching utils with new unit tests"
   - `tmdb.ts`: `tmdbGet(pathAndQuery: string): Promise<any|null>` (adds api_key, retries 5xx twice with backoff, 7s timeout, returns null on 4xx), `searchMovie(query): Promise<any[]>`, `findByUpc(upc): Promise<any[]>`, `getMovieDetails(tmdbId): Promise<any|null>` (with `append_to_response=release_dates,credits`).
   - `lookup.ts`: `lookupQuery(query: string): Promise<{ status: string, candidates: any[], detectedEdition: string }>` and `lookupByIdentifiedTitle(title: string, year: number|null): Promise<any[]>`. Candidates carry `_score`/`_source` exactly like today's client code so the UI port is drop-in.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 `server/services/lookup.test.ts` (stub global fetch; no live network):
 
@@ -887,11 +887,11 @@ describe('lookupQuery', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run server/services` — Expected: FAIL (modules don't exist).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `server/services/tmdb.ts`:
 
@@ -1163,11 +1163,11 @@ export async function lookupQuery(rawQuery: string): Promise<LookupResult> {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run server/services` — Expected: all PASS. Note: the Open DB module cache (`openDbIndexes.loaded`) persists across tests in one file — the stubbed 404s make it `{upc:null,title:null}` which every test path tolerates.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/services/
@@ -1190,7 +1190,7 @@ git commit -m "BLU-ARCH-0002: server-side TMDB + lookup services (port of useLoo
   - `patchMovie(db, pk, input)`, `removeMovie(db, pk)` — same result convention.
   - HTTP: `POST /api/movies` → 201 record; `PATCH /api/movies/:pk` → 200 record; `DELETE /api/movies/:pk` → 200 `{deleted: true}`; validation failures → 400 `{error}`; missing pk → 404; wrong method → 405.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 `server/services/movies-api.test.ts`:
 
@@ -1262,11 +1262,11 @@ describe('removeMovie', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run server/services/movies-api.test.ts` — Expected: FAIL.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `server/services/enrich.ts` (placeholder, replaced in Task 7):
 
@@ -1402,11 +1402,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run server/services` — Expected: all PASS. Then `npm run build` — Expected: clean build.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/services/ app/routes/api.movies.ts app/routes/api.movies.\$pk.ts
@@ -1427,7 +1427,7 @@ git commit -m "BLU-ARCH-0002: movies CRUD API with validated create/patch/delete
   - `runEnrichment(pk: number): Promise<void>` — uses `getDb()`; resolves tmdb id from `tmdb_id` (or numeric `id`), fetches details, writes `runtime`, `production_countries` (ISO codes), `audio_tracks` (spoken language english names), `genres` (names), `tagline`, `overview` (keep existing if TMDB's is empty), `status='enriched'`, `enriched_at`. No tmdb id → `status='needs_tmdb_match'`. Fetch/parse failure → `status='enrich_failed'`. String/array shape-validation per TM-0001.
   - HTTP: `POST /api/movies/:pk/enrich` — runs enrichment synchronously, returns the updated record.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 `server/services/enrich.test.ts`:
 
@@ -1521,11 +1521,11 @@ describe('runEnrichment', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run server/services/enrich.test.ts` — Expected: FAIL (placeholder does nothing).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `server/services/enrich.ts` (full replacement):
 
@@ -1598,11 +1598,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 Note for the Task 2 implementer dependency: `updateMovie` must accept `runtime: null` (it does — `runtime` is in `UPDATABLE_FIELDS`).
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run server/services` — Expected: all PASS (including Task 6's tests, still green with the real enrich module).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/services/enrich.ts server/services/enrich.test.ts app/routes/api.movies.\$pk.enrich.ts
@@ -1626,7 +1626,7 @@ git commit -m "BLU-ARCH-0002: server-side enrichment (details_scraper.py port) +
   - HTTP: `POST /api/identify` with JSON `{ image: <base64>, media_type: 'image/jpeg'|'image/png'|'image/webp' }`.
 - Constraints: base64 length cap 1,400,000 chars (~1 MB); monthly cap `SCAN_MONTHLY_CAP` (default 200) → 429; Anthropic errors mapped to the same friendly messages as today's `parseAnthropicError`.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 `server/services/identify.test.ts`:
 
@@ -1703,11 +1703,11 @@ describe('identifyCover', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run server/services/identify.test.ts` — Expected: FAIL.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `server/services/identify.ts`:
 
@@ -1836,11 +1836,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run server` — Expected: all PASS. Then `npm run build` — Expected: clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/services/identify.ts server/services/identify.test.ts app/routes/api.identify.ts app/routes/api.lookup.ts
@@ -1861,14 +1861,14 @@ git commit -m "BLU-ARCH-0002: cover-ID endpoint with hard monthly cap + lookup e
 - Consumes: `/api/lookup`, `/api/identify`, `/api/movies`, `/api/movies/:pk`, `/api/movies/:pk/enrich`; Task 4 utils.
 - Produces: the working app UI. `useServerLookup()` returns the same surface today's `useLookup(keys)` returned minus `coverUsage` (now loader data): `{ loading, statusMsg, movieData, searchCandidates, scannedCode, userNote, setScannedCode, setUserNote, handleScan, search, identifyFromCover, selectMovieCandidate, reset }`.
 
-- [ ] **Step 1: Copy unchanged components**
+- [x] **Step 1: Copy unchanged components**
 
 ```bash
 mkdir -p app/components app/hooks
 cp web/src/components/MovieCard.jsx web/src/components/MovieGrid.jsx app/components/
 ```
 
-- [ ] **Step 2: Copy Scanner with the settings-reference edit**
+- [x] **Step 2: Copy Scanner with the settings-reference edit**
 
 `cp web/src/components/Scanner.jsx app/components/Scanner.jsx`, then replace the locked-state block (the `<div className="text-center space-y-3 py-4">` under `{tab === 'cover' && (` / `) : (`) with:
 
@@ -1882,7 +1882,7 @@ cp web/src/components/MovieCard.jsx web/src/components/MovieGrid.jsx app/compone
 
 (The `onClose`/"Go to Settings" button is removed — there is no settings screen anymore.)
 
-- [ ] **Step 3: Write MovieDetail with personal-field controls**
+- [x] **Step 3: Write MovieDetail with personal-field controls**
 
 Copy `web/src/components/MovieDetail.jsx` to `app/components/MovieDetail.jsx`, change the signature to `function MovieDetail({ movie, onClose, onDelete, onUpdate, onRetryEnrich })`, delete the `canDelete = false` prop and its conditional (delete button always renders now), and insert this block between the tech-specs grid (`</div>` closing `grid grid-cols-2...`) and the delete button:
 
@@ -1936,7 +1936,7 @@ Copy `web/src/components/MovieDetail.jsx` to `app/components/MovieDetail.jsx`, c
                     </div>
 ```
 
-- [ ] **Step 4: Write the client lookup hook**
+- [x] **Step 4: Write the client lookup hook**
 
 `app/hooks/useServerLookup.js` (the state-machine half of old `useLookup`; all network orchestration now behind `/api/*`):
 
@@ -2085,7 +2085,7 @@ export function useServerLookup() {
 }
 ```
 
-- [ ] **Step 5: Write the home route**
+- [x] **Step 5: Write the home route**
 
 `app/routes/home.jsx` — a port of `web/src/App.jsx` with the keys/gist/settings/GitHub machinery deleted, loader data replacing `loadMovies`, and plain-fetch mutations + `useRevalidator` replacing the GitHubClient (mutations complete in single-digit milliseconds on LAN, so the old optimistic-update complexity is dropped):
 
@@ -2406,7 +2406,7 @@ export default function Home() {
 
 Note: `startScheduler` doesn't exist until Task 10. For this task, create `server/scheduler.ts` as a placeholder: `export function startScheduler(): void {}`.
 
-- [ ] **Step 6: Verify manually (UI smoke test)**
+- [x] **Step 6: Verify manually (UI smoke test)**
 
 Run: `TMDB_API_KEY=<real key> npm run dev`, then in the browser at `http://localhost:3000`:
 1. Empty library renders ("Your collection is empty").
@@ -2417,7 +2417,7 @@ Run: `TMDB_API_KEY=<real key> npm run dev`, then in the browser at `http://local
 
 Expected: all five pass. `npm test` still green; `npm run build` clean.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add app/ server/scheduler.ts
@@ -2440,7 +2440,7 @@ git commit -m "BLU-ARCH-0002: UI port — home route, server-lookup hook, person
   - `startScheduler(): void` — `globalThis.__blurayScheduler` guard; first run 30s after boot, then hourly check; runs backup when `last_backup_at` missing or >24h old.
 - Constraints: GitHub commit message `Nightly backup of movies.json [skip ci]`; non-force (contents API PUT with current sha); token never appears in errors or logs.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 `server/services/backup.test.ts`:
 
@@ -2511,11 +2511,11 @@ describe('runBackup', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run server/services/backup.test.ts` — Expected: FAIL.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `server/services/backup.ts`:
 
@@ -2610,11 +2610,11 @@ export function startScheduler(): void {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run server` — Expected: all PASS. `npm run build` — Expected: clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add server/services/backup.ts server/services/backup.test.ts server/scheduler.ts
@@ -2633,7 +2633,7 @@ git commit -m "BLU-ARCH-0002: nightly movies.json export + GitHub backup push wi
 - Consumes: everything prior.
 - Produces: `docker compose up -d` serving the app on port 3000 with `/data` persisted to `./data`.
 
-- [ ] **Step 1: Write Docker files**
+- [x] **Step 1: Write Docker files**
 
 `Dockerfile`:
 
@@ -2694,7 +2694,7 @@ GITHUB_TOKEN=
 GITHUB_REPO=Solfood/bluray
 ```
 
-- [ ] **Step 2: Add a Deploy section to README.md**
+- [x] **Step 2: Add a Deploy section to README.md**
 
 ```markdown
 ## Deploy (bluray.local)
@@ -2709,12 +2709,12 @@ docker compose exec bluray sh -c "cd /app && DATA_DIR=/data node_modules/.bin/ts
 
 Note: `tsx` is a devDependency and gets pruned from the production image. Either run the import from the host (`DATA_DIR=./data npm run import -- ./movies.json` before first `docker compose up`, since `./data` is the mounted volume) — this is the documented path — or temporarily `npm install tsx` in the container. Document the host-side path in the README.
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Run: `docker build -t bluray-test .` — Expected: image builds (better-sqlite3 compiles in the build stage).
 Run: `cp .env.example .env` (leave keys empty), `docker compose up -d`, `curl -s http://localhost:3000 | grep -i collection` — Expected: HTML renders. `docker compose down`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add Dockerfile compose.yaml .env.example README.md
@@ -2730,12 +2730,12 @@ This task is operational — no new code. It executes the spec's cutover plan.
 **Files:**
 - Modify: `docs/work-index.md`, `docs/session-log.md` (status updates, evidence)
 
-- [ ] **Step 1: Import real data**
+- [x] **Step 1: Import real data**
 
 On the server (or locally first): `DATA_DIR=./data npm run import -- ./movies.json`
 Expected: `Imported 41 movies from ./movies.json` (count matches `python3 -c "import json; print(len(json.load(open('movies.json'))['movies']))"`).
 
-- [ ] **Step 2: Full verification with evidence**
+- [x] **Step 2: Full verification with evidence**
 
 Run: `npm test` and save output. Expected: all suites pass, including the real-file round-trip test. Attach the output to `docs/work-index.md` entry for BLU-ARCH-0002 (Gate 4 evidence — per project policy, no prose-only claims).
 

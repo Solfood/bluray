@@ -6,7 +6,13 @@
 
 | ID | Title | Status | Priority | Parent refs | Updated |
 |---|---|---|---|---|---|
-| BLU-ARCH-0002 | Refactor static SPA to self-hosted React Router v7 full-stack app | IN_PROGRESS | high | DEC-0002 | 2026-07-07 |
+| BLU-ARCH-0002 | Refactor static SPA to self-hosted React Router v7 full-stack app | IN_PROGRESS | high | DEC-0002 | 2026-07-10 |
+
+<!-- BLU-ARCH-0002 Gate 4 evidence: docs/evidence/BLU-ARCH-0002-test-run-2026-07-10.txt
+     (66/66 tests pass @ fd27b58; 41-movie import verified 41 rows in SQLite).
+     Remaining before DONE: parallel run on bluray.local, cutover, first successful
+     automated backup push (DEC-0002 gate for old-code deletion). -->
+| BLU-ARCH-0003 | Retire legacy static app — delete web/, Python scrapers, enrichment workflow; update CLAUDE.md Files table | PLANNED | med | BLU-ARCH-0002, DEC-0002 | 2026-07-10 |
 
 ## Completed
 

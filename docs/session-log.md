@@ -4,6 +4,31 @@ Append-only continuity log.
 
 ---
 
+### 2026-07-10 - Session 7
+
+- Markers: `BLU-ARCH-0002`
+- Objective: Finish the full-app plan — Tasks 10–12 (backup service, Docker packaging, migration prep).
+- Work completed:
+  - Task 10: `server/services/backup.ts` — `runBackup()` writes `$DATA_DIR/exports/movies.json` always, pushes to GitHub contents API (`[skip ci]`, sha-aware, non-force) when `GITHUB_TOKEN`+`GITHUB_REPO` set; records `last_backup_at`/`last_backup_ok` meta. `server/scheduler.ts` replaced placeholder: 30s-after-boot then hourly tick, backs up when last is missing/>24h. 3 new tests incl. token-never-leaks-in-errors.
+  - Task 11: `Dockerfile` (multi-stage, node:22-alpine, non-root, better-sqlite3 compiled in build stage), `compose.yaml` (`./data:/data`, LAN-only notes per TM-0001), `.env.example`, root `README.md` with host-side import path. Verified: image builds; `docker compose up` serves HTML ("Collection") on :3000.
+  - Task 12 (local steps): imported real `movies.json` (41 movies → 41 SQLite rows); full suite 66/66 pass — evidence at `docs/evidence/BLU-ARCH-0002-test-run-2026-07-10.txt`. Filed BLU-ARCH-0003 (legacy retirement) as PLANNED.
+- Deviations from plan: added `.env` to the existing `.dockerignore` — plan's `COPY . .` would otherwise bake secrets into the image (TM-0001).
+- Open issues/blockers: Remaining Task 12 steps are operational on `bluray.local`: deploy parallel to static site, run parallel-run checklist (plan §Task 12 Step 3), cutover reverse proxy to :3000, verify first automated backup push. BLU-ARCH-0002 stays IN_PROGRESS until then; BLU-ARCH-0003 stays PLANNED until the backup-push gate passes.
+- Next actions: On the home server: `cp .env.example .env` (fill keys), host-side import, `docker compose up -d --build`, work the parallel-run checklist, then cutover + `/handoff` to mark DONE.
+- References: BLU-ARCH-0002, BLU-ARCH-0003, DEC-0002, TM-0001
+
+---
+
+### 2026-07-06/07 - Session 6 (retroactive entry)
+
+- Markers: `BLU-ARCH-0002`
+- Objective: DEC-0002 decided (RRv7 full-stack rewrite); Tasks 1–9 of the plan executed across the sessions of 2026-07-06/07.
+- Work completed: RRv7 scaffold at repo root; SQLite layer (schema, FTS5, CRUD); import/export with lossless round-trip; shared matching utils; server TMDB+lookup services; movies CRUD API; enrichment service (details_scraper.py port) + retry endpoint; cover-ID endpoint with hard monthly cap (TOCTOU reservation, NaN cap fixes); UI port (home route, server-lookup hook, personal tracking controls). 15 commits on `blu-arch-0002-full-app`.
+- Note: this entry backfills sessions that were not logged at the time; see git log 2026-07-07 for the full sequence.
+- References: BLU-ARCH-0002, DEC-0002, TM-0001, docs/superpowers/plans/2026-07-06-full-app-refactor.md
+
+---
+
 ### 2026-04-24 - Session 5
 
 - Markers: `BLU-UX-0001`, `BLU-UX-0002`
